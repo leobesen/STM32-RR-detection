@@ -1,0 +1,7 @@
+p2p_client_app.c:154:6:P2PC_APP_Init	16	static
+p2p_client_app.c:186:6:P2PC_APP_Notification	24	static
+p2p_client_app.c:244:30:Event_Handler	88	static
+p2p_client_app.c:531:6:Gatt_Notification	16	static
+p2p_client_app.c:564:12:Write_Char	24	static
+p2p_client_app.c:611:6:Update_Service	16	static
+p2p_client_app.c:681:9:P2P_Client_APP_Get_State	4	static
