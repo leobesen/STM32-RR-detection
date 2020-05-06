@@ -1,0 +1,16 @@
+MPU9250.c:45:6:writeByte	24	static
+MPU9250.c:58:6:readByte	24	static
+MPU9250.c:73:6:getMres	4	static
+MPU9250.c:88:6:getGres	4	static
+MPU9250.c:110:6:getAres	4	static
+MPU9250.c:132:6:readAccelData	24	static
+MPU9250.c:142:6:readGyroData	24	static
+MPU9250.c:152:6:readMagData	24	static
+MPU9250.c:169:9:readTempData	16	static
+MPU9250.c:179:6:resetMPU9250	8	static
+MPU9250.c:185:6:initAK8963	16	static
+MPU9250.c:201:6:initMPU9250	16	static
+MPU9250.c:267:6:calibrateMPU9250	104	static
+MPU9250.c:414:6:MPU9250SelfTest	120	static
+MPU9250.c:506:6:MadgwickQuaternionUpdate	216	static
+MPU9250.c:600:6:MahonyQuaternionUpdate	184	static

@@ -1,0 +1,7 @@
+MAX30100.c:13:6:begin	24	static
+MAX30100.c:139:6:readFIFO	32	static
+MAX30100.c:154:9:read_diodes	40	static
+MAX30100.c:184:9:get_status	16	static
+MAX30100.c:193:6:readTemperature	32	static
+MAX30100.c:215:6:write_byte	32	static
+MAX30100.c:223:6:read_byte	24	static

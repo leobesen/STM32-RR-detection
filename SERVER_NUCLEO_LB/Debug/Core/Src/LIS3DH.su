@@ -1,0 +1,10 @@
+LIS3DH.c:35:6:LIS3DH_WriteIO	40	dynamic
+LIS3DH.c:49:6:LIS3DH_ReadIO	24	static
+LIS3DH.c:73:7:LIS3DH_Init	24	static
+LIS3DH.c:184:16:LIS3DH_GetDataRaw	32	static
+LIS3DH.c:234:19:LIS3DH_GetDataScaled	56	static
+LIS3DH.c:251:16:LIS3DH_GetDataFilter	48	static
+LIS3DH.c:284:6:LIS3DH_PollDRDY	24	static
+LIS3DH.c:305:6:LIS3DH_X_calibrate	16	static
+LIS3DH.c:311:6:LIS3DH_Y_calibrate	16	static
+LIS3DH.c:317:6:LIS3DH_Z_calibrate	16	static
