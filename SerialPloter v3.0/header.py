@@ -35,7 +35,7 @@ class Serial:
     def readSerial(self):
         while (self.stmSerial.inWaiting()==0):
             pass 
-        self.dataRead = self.stmSerial.read_until()
+        self.dataRead = self.stmSerial.read_until().decode()
         self.dataArray = self.dataRead.split(",")
         return self.dataArray
 

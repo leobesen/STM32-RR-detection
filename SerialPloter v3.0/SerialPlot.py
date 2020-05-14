@@ -39,8 +39,8 @@ if(s.portAvailable):
                 if(len(ppg.IR_LED) >= plot.numPointToPlot):
                     ppg.RED_LED.pop(0)
                     ppg.IR_LED.pop(0)
-                ppg.RED_LED.append(int(data[9]))
-                ppg.IR_LED.append(int(data[10]))
+                ppg.RED_LED.append(int(data[3]))
+                ppg.IR_LED.append(int(data[4]))
 
             #DSP
             #PPG DC Remove
