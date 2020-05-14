@@ -25,7 +25,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+#include "app_conf.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */

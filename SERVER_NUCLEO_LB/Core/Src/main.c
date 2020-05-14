@@ -126,6 +126,7 @@ int main(void)
   MX_RTC_Init();
   MX_I2C3_Init();
   MX_SPI1_Init();
+  MX_SPI2_Init();
   MX_TIM16_Init();
   /* USER CODE BEGIN 2 */
   //ACC Config
@@ -280,6 +281,7 @@ void read_sensors(void){
 
 		ble_buffer[0 + buff_counter] = (rawData_MPU9250[0] & 0x00FF);
 		ble_buffer[1 + buff_counter] = ((rawData_MPU9250[0] >> 8) & 0x00FF);
+
 		ble_buffer[2 + buff_counter] = (rawData_MPU9250[1] & 0x00FF);
 		ble_buffer[3 + buff_counter] = ((rawData_MPU9250[1] >> 8) & 0x00FF);
 		ble_buffer[4 + buff_counter] = (rawData_MPU9250[2] & 0x00FF);

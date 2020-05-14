@@ -35,13 +35,16 @@ default.size.stdout \
 OBJDUMP_LIST += \
 SERVER_NUCLEO_LB.list \
 
+OBJCOPY_BIN += \
+SERVER_NUCLEO_LB.bin \
+
 
 # All Target
 all: SERVER_NUCLEO_LB.elf secondary-outputs
 
 # Tool invocations
-SERVER_NUCLEO_LB.elf: $(OBJS) $(USER_OBJS) /home/leobesen/STM32CubeIDE/workspace_1.1.0/SERVER_NUCLEO_LB/STM32WB55RGVX_FLASH.ld
-	arm-none-eabi-gcc -o "SERVER_NUCLEO_LB.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/home/leobesen/STM32CubeIDE/workspace_1.1.0/SERVER_NUCLEO_LB/STM32WB55RGVX_FLASH.ld" --specs=nosys.specs -Wl,-Map="SERVER_NUCLEO_LB.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+SERVER_NUCLEO_LB.elf: $(OBJS) $(USER_OBJS) /home/leobesen/STM32CubeIDE/workspace_1.3.0/SERVER_NUCLEO_LB/STM32WB55RGVX_FLASH.ld
+	arm-none-eabi-gcc -o "SERVER_NUCLEO_LB.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/home/leobesen/STM32CubeIDE/workspace_1.3.0/SERVER_NUCLEO_LB/STM32WB55RGVX_FLASH.ld" --specs=nosys.specs -Wl,-Map="SERVER_NUCLEO_LB.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -55,12 +58,17 @@ SERVER_NUCLEO_LB.list: $(EXECUTABLES)
 	@echo 'Finished building: $@'
 	@echo ' '
 
+SERVER_NUCLEO_LB.bin: $(EXECUTABLES)
+	arm-none-eabi-objcopy  -O binary $(EXECUTABLES) "SERVER_NUCLEO_LB.bin"
+	@echo 'Finished building: $@'
+	@echo ' '
+
 # Other Targets
 clean:
 	-$(RM) *
 	-@echo ' '
 
-secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)
+secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_BIN)
 
 .PHONY: all clean dependents
 .SECONDARY:

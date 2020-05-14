@@ -590,8 +590,6 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification( void *pckt )
            */
           connection_complete_event = (hci_le_connection_complete_event_rp0 *) meta_evt->data;
           
-
-
           HW_TS_Stop(BleApplicationContext.Advertising_mgr_timer_Id);
 
           APP_DBG_MSG("EVT_LE_CONN_COMPLETE for connection handle 0x%x\n",
