@@ -32,6 +32,8 @@
 /* USER CODE BEGIN Includes */
 #include "app_ble.h"
 #include "stm32_seq.h"
+#include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -191,10 +193,32 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-void transmit_CDC_messege(uint8_t* Buf, uint16_t Len){
+void transmit_CDC_messege(uint8_t* Buff, uint16_t Len){
 
 	uint8_t result = 0;
-	result = CDC_Transmit_FS(Buf, Len);
+	char t[100];
+	char aux[10];
+	uint16_t dest[5];
+
+	for(int j=0;j<40;j+=10){
+		memset(t,0,100);
+
+		dest[0] = (uint16_t)(((uint16_t)Buff[1+j] << 8) | Buff[0+j]);  // Turn the MSB and LSB into a signed 16-bit value
+		dest[1] = (uint16_t)(((uint16_t)Buff[3+j] << 8) | Buff[2+j]);
+		dest[2] = (uint16_t)(((uint16_t)Buff[5+j] << 8) | Buff[4+j]);
+		dest[3] = (uint16_t)(((uint16_t)Buff[7+j] << 8) | Buff[6+j]);
+		dest[4] = (uint16_t)(((uint16_t)Buff[9+j] << 8) | Buff[8+j]);
+
+		for(int i=0;i<4;i++){
+			sprintf(aux,"%u,",dest[i]);
+			strcat(t,aux);
+		}
+		sprintf(aux,"%u\n",dest[4]);
+		strcat(t,aux);
+		result = CDC_Transmit_FS((uint8_t*)t, (unsigned)strlen(t));
+	}
+
+
 	if (result == 1)
 		HAL_GPIO_WritePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin, GPIO_PIN_SET);
 	else
