@@ -1,0 +1,9 @@
+LIS3DH_I2C.c:21:6:begin_LIS3DH_I2C	16	static
+LIS3DH_I2C.c:25:6:initialize	24	static
+LIS3DH_I2C.c:82:6:read_reg_data	24	static
+LIS3DH_I2C.c:94:6:read_mg_data	24	static
+LIS3DH_I2C.c:117:6:read_data	24	static
+LIS3DH_I2C.c:139:9:read_id	16	static
+LIS3DH_I2C.c:146:10:data_ready	16	static
+LIS3DH_I2C.c:159:10:read_reg	24	static
+LIS3DH_I2C.c:170:6:write_reg	24	static

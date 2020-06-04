@@ -10,7 +10,7 @@ MPU9250.c:169:9:readTempData	16	static
 MPU9250.c:179:6:resetMPU9250	8	static
 MPU9250.c:185:6:initAK8963	16	static
 MPU9250.c:201:6:initMPU9250	16	static
-MPU9250.c:267:6:calibrateMPU9250	104	static
-MPU9250.c:414:6:MPU9250SelfTest	120	static
-MPU9250.c:506:6:MadgwickQuaternionUpdate	216	static
-MPU9250.c:600:6:MahonyQuaternionUpdate	184	static
+MPU9250.c:271:6:calibrateMPU9250	104	static
+MPU9250.c:418:6:MPU9250SelfTest	120	static
+MPU9250.c:510:6:MadgwickQuaternionUpdate	216	static
+MPU9250.c:604:6:MahonyQuaternionUpdate	184	static

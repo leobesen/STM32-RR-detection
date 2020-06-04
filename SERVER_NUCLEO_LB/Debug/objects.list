@@ -1,4 +1,5 @@
 "Core/Src/LIS3DH.o"
+"Core/Src/LIS3DH_I2C.o"
 "Core/Src/MAX30100.o"
 "Core/Src/MPU9250.o"
 "Core/Src/app_entry.o"

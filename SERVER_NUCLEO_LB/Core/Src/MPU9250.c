@@ -1,7 +1,7 @@
 #include "MPU9250.h"
 
-#define _MPU9050_CS_ENBALE		HAL_GPIO_WritePin(MPU9050_CS_GPIO_Port, MPU9050_CS_Pin, GPIO_PIN_RESET);
-#define _MPU9050_CS_DISABLE		HAL_GPIO_WritePin(MPU9050_CS_GPIO_Port, MPU9050_CS_Pin, GPIO_PIN_SET);
+#define _MPU9050_CS_ENBALE		HAL_GPIO_WritePin(SPI1_CS_1_GPIO_Port, SPI1_CS_1_Pin, GPIO_PIN_RESET);
+#define _MPU9050_CS_DISABLE		HAL_GPIO_WritePin(SPI1_CS_1_GPIO_Port, SPI1_CS_1_Pin, GPIO_PIN_SET);
 
 uint8_t Ascale = AFS_2G;     // AFS_2G, AFS_4G, AFS_8G, AFS_16G
 uint8_t Gscale = GFS_250DPS; // GFS_250DPS, GFS_500DPS, GFS_1000DPS, GFS_2000DPS
@@ -200,26 +200,29 @@ void initAK8963(float * destination)
 
 void initMPU9250()
 {  
-  // Initialize MPU9250 device
+	uint8_t c;
+
+	// Initialize MPU9250 device
   // wake up device
   writeByte(PWR_MGMT_1, 0x00); // Clear sleep mode bit (6), enable all sensors
+  readByte(PWR_MGMT_1, &c, 1);
   HAL_Delay(100); // Delay 100 ms for PLL to get established on x-axis gyro; should check for PLL ready interrupt
 
   // get stable time source
   writeByte(PWR_MGMT_1, 0x01);  // Set clock source to be PLL with x-axis gyroscope reference, bits 2:0 = 001
-
+  readByte(PWR_MGMT_1, &c, 1);
   // Configure Gyro and Accelerometer
   // Disable FSYNC and set accelerometer and gyro bandwidth to 44 and 42 Hz, respectively; 
   // DLPF_CFG = bits 2:0 = 010; this sets the sample rate at 1 kHz for both
   // Maximum delay is 4.9 ms which is just over a 200 Hz maximum rate
   writeByte(CONFIG, 0x03);
-
+  readByte(CONFIG, &c, 1);
   // Set sample rate = gyroscope output rate/(1 + SMPLRT_DIV)
   writeByte(SMPLRT_DIV, 0x04);  // Use a 200 Hz rate; the same rate set in CONFIG above
-
+  readByte(SMPLRT_DIV, &c, 1);
   // Set gyroscope full scale range
   // Range selects FS_SEL and AFS_SEL are 0 - 3, so 2-bit values are left-shifted into positions 4:3
-  uint8_t c;
+
   //readByte(GYRO_CONFIG, &c, 1);
   //writeByte(GYRO_CONFIG, c & ~0xE0); // Clear self-test bits [7:5]
   //writeByte(GYRO_CONFIG, c & ~0x18); // Clear AFS bits [4:3]
@@ -230,7 +233,7 @@ void initMPU9250()
   writeByte(ACCEL_CONFIG, c & ~0xE0); // Clear self-test bits [7:5]
   writeByte(ACCEL_CONFIG, c & ~0x18); // Clear AFS bits [4:3]
   writeByte(ACCEL_CONFIG, c | Ascale << 3); // Set full scale range for the accelerometer
-
+  readByte(ACCEL_CONFIG, &c, 1);
   // Set accelerometer sample rate configuration
   // It is possible to get a 4 kHz sample rate from the accelerometer by choosing 1 for
   // accel_fchoice_b bit [3]; in this case the bandwidth is 1.13 kHz
@@ -238,6 +241,7 @@ void initMPU9250()
   writeByte(ACCEL_CONFIG2, c & ~0x0F); // Clear accel_fchoice_b (bit 3) and A_DLPFG (bits [2:0])
   //writeByte(ACCEL_CONFIG2, c | 0x03); // Set accelerometer rate to 1 kHz and bandwidth to 41 Hz
   writeByte(ACCEL_CONFIG2, c | 0x0B); // Set accelerometer rate to 1 kHz and bandwidth to 41 Hz
+  readByte(ACCEL_CONFIG2, &c, 1);
   //0000 1011
 
   // The accelerometer, gyro, and thermometer are set to 1 kHz sample rates, 

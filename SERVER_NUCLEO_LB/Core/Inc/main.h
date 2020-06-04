@@ -60,16 +60,20 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define MPU9050_CS_Pin GPIO_PIN_0
-#define MPU9050_CS_GPIO_Port GPIOA
 #define LIS3DH_CS_Pin GPIO_PIN_2
 #define LIS3DH_CS_GPIO_Port GPIOA
+#define SPI1_CS_1_Pin GPIO_PIN_4
+#define SPI1_CS_1_GPIO_Port GPIOA
+#define SPI1_CS_2_Pin GPIO_PIN_9
+#define SPI1_CS_2_GPIO_Port GPIOA
 #define B1_Pin GPIO_PIN_4
 #define B1_GPIO_Port GPIOC
 #define LED_GREEN_Pin GPIO_PIN_0
 #define LED_GREEN_GPIO_Port GPIOB
 #define LED_RED_Pin GPIO_PIN_1
 #define LED_RED_GPIO_Port GPIOB
+#define SPI2_CS_1_Pin GPIO_PIN_12
+#define SPI2_CS_1_GPIO_Port GPIOB
 #define JTMS_Pin GPIO_PIN_13
 #define JTMS_GPIO_Port GPIOA
 #define JTCK_Pin GPIO_PIN_14
@@ -80,6 +84,8 @@ void Error_Handler(void);
 #define B3_GPIO_Port GPIOD
 #define JTDO_Pin GPIO_PIN_3
 #define JTDO_GPIO_Port GPIOB
+#define SPI2_CS_2_Pin GPIO_PIN_4
+#define SPI2_CS_2_GPIO_Port GPIOB
 #define LED_BLUE_Pin GPIO_PIN_5
 #define LED_BLUE_GPIO_Port GPIOB
 #define STLINK_RX_Pin GPIO_PIN_6
@@ -87,7 +93,7 @@ void Error_Handler(void);
 #define STLINK_TX_Pin GPIO_PIN_7
 #define STLINK_TX_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
-#define PAYLOAD_LENGTH 40
+#define PAYLOAD_LENGTH 48
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

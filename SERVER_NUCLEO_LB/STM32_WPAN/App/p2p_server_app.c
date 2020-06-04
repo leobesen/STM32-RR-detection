@@ -197,7 +197,7 @@ void P2PS_APP_Init(void)
 static void P2PS_Send_Notification_Task(void)
 {
   /* Update P2P_NOTIFY characteristic */
-	uint8_t value[40] = {0};
+	uint8_t value[PAYLOAD_LENGTH] = {0};
 
 	if(P2P_Server_App_Context.NotificationStatus)
 	{

@@ -84,7 +84,7 @@ void NMI_Handler(void)
 void HardFault_Handler(void)
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
-
+	HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
   /* USER CODE END HardFault_IRQn 0 */
   while (1)
   {

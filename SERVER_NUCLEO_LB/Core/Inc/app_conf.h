@@ -485,8 +485,7 @@ typedef enum
     CFG_TASK_HCI_ASYNCH_EVT_ID,
 /* USER CODE BEGIN CFG_Task_Id_With_HCI_Cmd_t */
   CFG_MY_TASK_NOTIFY_DATA,
-  READ_ACC_TASK,
-  READ_ADC_TASK,
+  READ_SENSORS_TASK,
   SEND_DATA_BLE_TASK,
 /* USER CODE END CFG_Task_Id_With_HCI_Cmd_t */
     CFG_LAST_TASK_ID_WITH_HCICMD,                                               /**< Shall be LAST in the list */

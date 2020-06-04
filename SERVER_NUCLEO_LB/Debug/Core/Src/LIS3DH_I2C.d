@@ -1,4 +1,5 @@
-Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
+Core/Src/LIS3DH_I2C.o: ../Core/Src/LIS3DH_I2C.c ../Core/Inc/LIS3DH_I2C.h \
+ ../Core/Inc/main.h \
  /home/leobesen/STM32Cube/Repository/STM32Cube_FW_WB_V1.3.0/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal.h \
  ../Core/Inc/stm32wbxx_hal_conf.h \
  /home/leobesen/STM32Cube/Repository/STM32Cube_FW_WB_V1.3.0/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal_dma.h \
@@ -61,16 +62,9 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  /home/leobesen/STM32Cube/Repository/STM32Cube_FW_WB_V1.3.0/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_ll_rtc.h \
  /home/leobesen/STM32Cube/Repository/STM32Cube_FW_WB_V1.3.0/Utilities/sequencer/stm32_seq.h \
  /home/leobesen/STM32Cube/Repository/STM32Cube_FW_WB_V1.3.0/Utilities/lpm/tiny_lpm/stm32_lpm.h \
- ../Core/Inc/i2c.h ../Core/Inc/main.h ../Core/Inc/rf.h ../Core/Inc/rtc.h \
- ../Core/Inc/spi.h ../Core/Inc/app_entry.h ../Core/Inc/app_common.h \
- ../Core/Inc/tim.h ../Core/Inc/usart.h ../Core/Inc/usb.h \
- ../Core/Inc/gpio.h ../Core/Inc/LIS3DH_I2C.h ../Core/Inc/i2c.h \
- ../Core/Inc/MPU9250.h ../Core/Inc/spi.h ../Core/Inc/MAX30100.h \
- ../Core/Inc/app_conf.h ../STM32_WPAN/App/app_ble.h \
- /home/leobesen/STM32Cube/Repository/STM32Cube_FW_WB_V1.3.0/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/hci_tl.h \
- /home/leobesen/STM32Cube/Repository/STM32Cube_FW_WB_V1.3.0/Middlewares/ST/STM32_WPAN/stm32_wpan_common.h \
- /home/leobesen/STM32Cube/Repository/STM32Cube_FW_WB_V1.3.0/Drivers/CMSIS/Include/cmsis_compiler.h \
- /home/leobesen/STM32Cube/Repository/STM32Cube_FW_WB_V1.3.0/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/tl.h
+ ../Core/Inc/i2c.h
+
+../Core/Inc/LIS3DH_I2C.h:
 
 ../Core/Inc/main.h:
 
@@ -201,45 +195,3 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 /home/leobesen/STM32Cube/Repository/STM32Cube_FW_WB_V1.3.0/Utilities/lpm/tiny_lpm/stm32_lpm.h:
 
 ../Core/Inc/i2c.h:
-
-../Core/Inc/main.h:
-
-../Core/Inc/rf.h:
-
-../Core/Inc/rtc.h:
-
-../Core/Inc/spi.h:
-
-../Core/Inc/app_entry.h:
-
-../Core/Inc/app_common.h:
-
-../Core/Inc/tim.h:
-
-../Core/Inc/usart.h:
-
-../Core/Inc/usb.h:
-
-../Core/Inc/gpio.h:
-
-../Core/Inc/LIS3DH_I2C.h:
-
-../Core/Inc/i2c.h:
-
-../Core/Inc/MPU9250.h:
-
-../Core/Inc/spi.h:
-
-../Core/Inc/MAX30100.h:
-
-../Core/Inc/app_conf.h:
-
-../STM32_WPAN/App/app_ble.h:
-
-/home/leobesen/STM32Cube/Repository/STM32Cube_FW_WB_V1.3.0/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/hci_tl.h:
-
-/home/leobesen/STM32Cube/Repository/STM32Cube_FW_WB_V1.3.0/Middlewares/ST/STM32_WPAN/stm32_wpan_common.h:
-
-/home/leobesen/STM32Cube/Repository/STM32Cube_FW_WB_V1.3.0/Drivers/CMSIS/Include/cmsis_compiler.h:
-
-/home/leobesen/STM32Cube/Repository/STM32Cube_FW_WB_V1.3.0/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/tl.h:

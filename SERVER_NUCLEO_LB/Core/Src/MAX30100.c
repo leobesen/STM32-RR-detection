@@ -5,7 +5,7 @@
  *      Author: leobesen
  */
 #include "MAX30100.h"
-
+#include <stdlib.h>     /* abs */
 
 float temperature;
 //uint16_t IR, RED;
@@ -18,8 +18,8 @@ void begin(void){
 	  bool spo2_hs = true;
 	  uint8_t spo2_sr = 6; // [0,7]
 	  uint8_t pulse_width = 3; // [0,3]
-	  uint8_t red_level = 0x0F; // 0b00001111; // [0,15]
-	  uint8_t ir_level = 0x0F; // [0,15]
+	  uint8_t red_level = 0x05; // 0b00001111; // [0,15]
+	  uint8_t ir_level = 0x05; // [0,15]
 	  uint8_t hr_ready_int = true;
 	  uint8_t spo2_ready_int = true;
 	  uint8_t temp_ready_int = true;

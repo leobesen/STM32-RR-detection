@@ -1,6 +1,6 @@
 p2p_server_app.c:93:6:P2PS_STM_App_Notification	16	static
 p2p_server_app.c:140:6:P2PS_APP_Notification	16	static
 p2p_server_app.c:174:6:P2PS_APP_Init	8	static
-p2p_server_app.c:197:13:P2PS_Send_Notification_Task	48	static
+p2p_server_app.c:197:13:P2PS_Send_Notification_Task	56	static
 p2p_server_app.c:224:13:P2PS_APP_context_Init	4	static
 p2p_server_app.c:234:13:P2PS_DataChange_Timer_Callback	8	static

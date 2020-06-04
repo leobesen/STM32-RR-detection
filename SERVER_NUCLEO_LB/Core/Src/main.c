@@ -29,7 +29,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "LIS3DH.h"
+//#include "LIS3DH.h"
+#include "LIS3DH_I2C.h"
 #include "MPU9250.h"
 #include "MAX30100.h"
 #include "app_conf.h"
@@ -43,6 +44,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define ADS1115_ADDRESS 0x48
+uint8_t ADSwrite[3];
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -66,13 +69,13 @@ void get_buffer_values(uint8_t* buff);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-LIS3DH_InitTypeDef myAccConfigDef = {
-		DATARATE_400,
-		FS_2,
-		XYZ_ENABLE,
-		false,
-		HIGH_RESOLUTION
-};
+//LIS3DH_InitTypeDef myAccConfigDef = {
+//		DATARATE_400,
+//		FS_2,
+//		XYZ_ENABLE,
+//		false,
+//		HIGH_RESOLUTION
+//};
 
 uint8_t WAI_LIS3DH = 0;
 uint8_t WAI_MPU9250 = 0;
@@ -85,9 +88,12 @@ int16_t rawData_MPU9250[3] = {0};
 
 uint16_t IR = 0, RED = 0;
 
-uint8_t ble_buffer[40] = {0};
+uint8_t ble_buffer[48] = {0};
 uint8_t buff_counter = 0;
 char flag_buffer_full = 0x00;
+char flag_reading_completed = 0x01;
+
+
 
 /* USER CODE END 0 */
 
@@ -128,18 +134,17 @@ int main(void)
   MX_SPI1_Init();
   MX_SPI2_Init();
   MX_TIM16_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
+
+  //
   //ACC Config
 
   /*
    * LIS3DH
    * */
-
-//   LIS3DH_ReadIO(WHO_AM_I, &WAI_LIS3DH, 1);
-//
-//   LIS3DH_Init(&hspi1, &myAccConfigDef);
-//
-//   LIS3DH_ReadIO(WHO_AM_I, &WAI_LIS3DH, 1);
+  //WAI_LIS3DH = read_id();
+  //begin_LIS3DH_I2C(LIS3DH_G_CHIP_ADDR, LIS3DH_DR_NR_LP_400HZ, LIS3DH_FS_2G);
 
   /*
    * MPU9250
@@ -157,6 +162,7 @@ int main(void)
 
    begin();
 
+   UTIL_SEQ_RegTask( 1<< READ_SENSORS_TASK, UTIL_SEQ_RFU, read_sensors );
 
   /* USER CODE END 2 */
 
@@ -171,15 +177,6 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 	  UTIL_SEQ_Run(UTIL_SEQ_DEFAULT);
-//	  read_byte( MAX30100_FIFO_WR_PTR, &status );
-//
-//	  status = get_status();
-//	  if(status != 0){
-//		  status = 0;
-      //read_diodes(&IR, &RED);
-//	  }
-	  //readTemperature();
-
 
   }
   /* USER CODE END 3 */
@@ -243,13 +240,15 @@ void SystemClock_Config(void)
   */
   PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SMPS|RCC_PERIPHCLK_RFWAKEUP
                               |RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_USART1
-                              |RCC_PERIPHCLK_I2C3|RCC_PERIPHCLK_USB;
+                              |RCC_PERIPHCLK_I2C1|RCC_PERIPHCLK_I2C3
+                              |RCC_PERIPHCLK_USB;
   PeriphClkInitStruct.PLLSAI1.PLLN = 24;
   PeriphClkInitStruct.PLLSAI1.PLLP = RCC_PLLP_DIV2;
   PeriphClkInitStruct.PLLSAI1.PLLQ = RCC_PLLQ_DIV2;
   PeriphClkInitStruct.PLLSAI1.PLLR = RCC_PLLR_DIV2;
   PeriphClkInitStruct.PLLSAI1.PLLSAI1ClockOut = RCC_PLLSAI1_USBCLK;
   PeriphClkInitStruct.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
+  PeriphClkInitStruct.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
   PeriphClkInitStruct.I2c3ClockSelection = RCC_I2C3CLKSOURCE_PCLK1;
   PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_PLLSAI1;
   PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
@@ -291,6 +290,7 @@ void read_sensors(void){
 		 * MAX30100
 		 * */
 		//read_diodes(&IR, &RED);
+
 		readFIFO(&RED, &IR);
 
 		ble_buffer[6 + buff_counter] = (RED & 0x00FF);
@@ -298,21 +298,36 @@ void read_sensors(void){
 		ble_buffer[8 + buff_counter] = (IR & 0x00FF);
 		ble_buffer[9 + buff_counter] = ((IR >> 8) & 0x00FF);
 
+		/*
+		 * ADS1115
+		 * */
+		ADSwrite[0] = 0x01;
+	    ADSwrite[1] = 0xC1;// 11000001
+	    ADSwrite[2] = 0x83; // 10000011
+	    HAL_I2C_Master_Transmit(&hi2c3, ADS1115_ADDRESS<<1,ADSwrite,3,100);
+	    ADSwrite[0] = 0x00;
+	    HAL_I2C_Master_Transmit(&hi2c3, ADS1115_ADDRESS<<1,ADSwrite,1,100);
+	    HAL_Delay(20);
+	    HAL_I2C_Master_Receive(&hi2c3, ADS1115_ADDRESS<<1,ADSwrite,2,100);
 
-		if(buff_counter == 30){
+		ble_buffer[10 + buff_counter] = ADSwrite[1];
+		ble_buffer[11 + buff_counter] = ADSwrite[0];
+
+		if(buff_counter == 36){
 			buff_counter = 0;
 			flag_buffer_full = 0x01;
 			//HAL_TIM_Base_Stop_IT(&htim16);
 			UTIL_SEQ_SetTask(1 << CFG_MY_TASK_NOTIFY_DATA, CFG_SCH_PRIO_0);
 		}else{
-			buff_counter+=10;
+			buff_counter+=12;
 			flag_buffer_full = 0x00;
 		}
+		flag_reading_completed = 0x00;
 	}
 }
 
 void get_buffer_values(uint8_t* buff){
-	for(int i = 0; i < 40; i++)
+	for(int i = 0; i < PAYLOAD_LENGTH; i++)
 		buff[i] = ble_buffer[i];
 	flag_buffer_full = 0x00;
 	//HAL_TIM_Base_Start_IT(&htim16);
@@ -322,8 +337,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* Prevent unused argument(s) compilation warning */
   if(htim == &htim16){
-	  if(APP_BLE_Get_Server_Connection_Status() == APP_BLE_CONNECTED_SERVER)
-		  read_sensors();
+	  if(APP_BLE_Get_Server_Connection_Status() == APP_BLE_CONNECTED_SERVER){
+		  UTIL_SEQ_SetTask(1 << READ_SENSORS_TASK, CFG_SCH_PRIO_0);
+	  }
+
   }
 
   /* NOTE : This function should not be modified, when the callback is needed,
