@@ -198,9 +198,9 @@ void transmit_CDC_messege(uint8_t* Buff, uint16_t Len){
 	uint8_t result = 0;
 	char t[100];
 	char aux[10];
-	uint16_t dest[5];
+	uint16_t dest[6];
 
-	for(int j=0;j<40;j+=10){
+	for(int j=0;j<PAYLOAD_LENGTH;j+=(PAYLOAD_LENGTH/4)){
 		memset(t,0,100);
 
 		dest[0] = (uint16_t)(((uint16_t)Buff[1+j] << 8) | Buff[0+j]);  // Turn the MSB and LSB into a signed 16-bit value
@@ -208,12 +208,13 @@ void transmit_CDC_messege(uint8_t* Buff, uint16_t Len){
 		dest[2] = (uint16_t)(((uint16_t)Buff[5+j] << 8) | Buff[4+j]);
 		dest[3] = (uint16_t)(((uint16_t)Buff[7+j] << 8) | Buff[6+j]);
 		dest[4] = (uint16_t)(((uint16_t)Buff[9+j] << 8) | Buff[8+j]);
+		dest[5] = (uint16_t)(((uint16_t)Buff[11+j] << 8) | Buff[10+j]);
 
-		for(int i=0;i<4;i++){
+		for(int i=0;i<5;i++){
 			sprintf(aux,"%u,",dest[i]);
 			strcat(t,aux);
 		}
-		sprintf(aux,"%u\n",dest[4]);
+		sprintf(aux,"%u\n",dest[5]);
 		strcat(t,aux);
 		result = CDC_Transmit_FS((uint8_t*)t, (unsigned)strlen(t));
 	}
