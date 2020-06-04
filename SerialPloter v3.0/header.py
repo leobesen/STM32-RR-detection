@@ -36,6 +36,8 @@ class Serial:
         while (self.stmSerial.inWaiting()==0):
             pass 
         self.dataRead = self.stmSerial.read_until().decode()
+        #print(self.dataRead)
+        #print('\n')
         self.dataArray = self.dataRead.split(",")
         return self.dataArray
 
@@ -87,13 +89,18 @@ class ACC:
 class ACC_Impulse_Remove:
     def __init__(self,enable):
         self.enable = enable
-        self.N = 32
+        self.N = 16
         self.X_Imp_Removed = []
         self.Y_Imp_Removed = []
         self.Z_Imp_Removed = []
         self.X_temp = []
         self.Y_temp = []
         self.Z_temp = []
+
+class FSR:
+    def __init__(self,enable):
+        self.enable = enable
+        self.fsr = []
 
 class Counters:
     def __init__(self):

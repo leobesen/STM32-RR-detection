@@ -6,7 +6,7 @@ class DataPlt:
         plt.figure(figsize=(20,5))
         self.plotCounter = 0
         self.plotCounterMax = 10
-        self.numPointToPlot = 250
+        self.numPointToPlot = 256
         self.numPlots = 1
         self.var1 = []
         self.var2 = []

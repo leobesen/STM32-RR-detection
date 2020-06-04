@@ -14,6 +14,7 @@ ppg_peak = PPG_Peak_Finder()
 ppg_eemd = PPG_EEMD(False)
 acc = ACC(True)
 acc_ImpR = ACC_Impulse_Remove(True)
+fsr = FSR(True)
 counter = Counters()
 plot = DataPlt()
 func = Functions()
@@ -27,6 +28,7 @@ if(s.portAvailable):
         while True:
             #read data
             data = s.readSerial()
+            # Accelerometer (ACC)
             if(acc.enable):
                 if(len(acc.X) >= plot.numPointToPlot):
                     acc.X.pop(0)
@@ -35,12 +37,18 @@ if(s.portAvailable):
                 acc.X.append(float(data[0])*2.0/32768.0)
                 acc.Y.append(float(data[1])*2.0/32768.0)
                 acc.Z.append(float(data[2])*2.0/32768.0)
+            # Photoplethysmography (PPG)
             if(ppg.enable):
                 if(len(ppg.IR_LED) >= plot.numPointToPlot):
                     ppg.RED_LED.pop(0)
                     ppg.IR_LED.pop(0)
                 ppg.RED_LED.append(int(data[3]))
                 ppg.IR_LED.append(int(data[4]))
+            # Force sensitive resistor (FSR)
+            if(fsr.enable):
+                if(len(fsr.fsr) >= plot.numPointToPlot):
+                    fsr.fsr.pop(0)
+                fsr.fsr.append(int(data[5]))
 
             #DSP
             #PPG DC Remove
@@ -131,9 +139,9 @@ if(s.portAvailable):
             #Choose data to plot
             plot.numPlots = 2
             plot.var1 = acc_ImpR.Z_Imp_Removed
-            plot.var1_label = 'ACC Z'
-            plot.var2 = ppg.IR_LED
-            plot.var2_label = 'PPG IR'
+            plot.var1_label = 'acc_ImpR.Z_Imp_Removed'
+            plot.var2 = fsr.fsr
+            plot.var2_label = 'fsr.fsr'
             #Plot Control
             if(plot.plotCounter >= plot.plotCounterMax):
                 plot.plotCounter=0
@@ -148,6 +156,11 @@ if(s.portAvailable):
             plot.plotCounter+=1
             counter.cnt_peak+=1
             ppg_eemd.cnt_emd+=1
+            #print(counter.cnt)
+            #print(fsr.fsr[0:5])
+            if (counter.cnt >= 256):
+                if (counter.cnt%40 == 0):
+                    func.fft(fsr.fsr[0:256])
 
 
     except KeyboardInterrupt:
