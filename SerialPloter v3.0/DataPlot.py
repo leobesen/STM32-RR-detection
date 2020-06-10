@@ -5,34 +5,18 @@ class DataPlt:
         plt.ion()
         plt.figure(figsize=(20,5))
         self.plotCounter = 0
-        self.plotCounterMax = 10
-        self.numPointToPlot = 256
+        self.plotCounterMax = 1
+        self.numPoints_FSR = 250
+        self.numPoints_ACC = 500
+        self.numPoints_PPG = 3000
         self.numPlots = 1
-        self.var1 = []
-        self.var2 = []
-        self.var1_label = ""
-        self.var2_label = ""
-        self.var_1_style = 'bo-'
-        self.var_2_style = 'yo-'
+        self.var = {}
+        self.var_label = {}
+        self.var_style = {}
 
-    def makeFig_oneVar(self):
-        plt.plot(self.var1, self.var_1_style, label=self.var1_label)
-        plt.title(self.var1_label)                              
-        plt.grid(True)                               
-        plt.ylabel(self.var1_label)                               
-        plt.legend(loc='upper left')                      
-
-    def makeFig_twoVar(self):   
-        plt.subplot(2,1,1)
-        plt.plot(self.var1, self.var_1_style, label=self.var1_label)  
-        plt.title(self.var1_label)                                
-        plt.grid(True)
-        plt.ylabel(self.var1_label)                              
-        plt.legend(loc='upper left')
-
-        plt.subplot(2,1,2) 
-        plt.plot(self.var2, self.var_2_style, label=self.var2_label)      
-        plt.title(self.var2_label)                              
-        plt.grid(True) 
-        plt.ylabel(self.var2_label)                              
-        plt.legend(loc='upper left')
+    def makeFig(self):   
+        for i in range(self.numPlots):
+            plt.subplot(self.numPlots,1,i+1)
+            plt.plot(self.var[str(i)], self.var_style[str(i)], label=self.var_label[str(i)])                                  
+            plt.grid(True)                             
+            plt.legend(loc='upper left')

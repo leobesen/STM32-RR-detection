@@ -37,9 +37,9 @@ class Functions:
         eIMFs = self.eemd.eemd(ppg_signal)
         return eIMFs
 
-    def fft(self, signal):
+    def fft(self, signal, l):
         
-        fourierTransform = fftpack.fft(signal)
+        fourierTransform = fftpack.fft(signal,n=l)
         amplitude = np.abs(fourierTransform)
         sample_freq = fftpack.fftfreq(len(signal),d=self.samplingInterval)
         

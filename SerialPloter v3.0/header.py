@@ -15,7 +15,7 @@ class Serial:
     
     def __init__(self):
         self.COM = '/dev/ttyACM0'        # COM port connected to the device
-        self.BaudRate = 115200           # Baud Rate of the communication
+        self.BaudRate = 9600           # Baud Rate of the communication
         self.portAvailable = False
     
     def initSerial(self):
@@ -36,9 +36,9 @@ class Serial:
         while (self.stmSerial.inWaiting()==0):
             pass 
         self.dataRead = self.stmSerial.read_until().decode()
-        #print(self.dataRead)
-        #print('\n')
+        #self.dataRead = self.stmSerial.readline().decode()
         self.dataArray = self.dataRead.split(",")
+        # print(self.dataArray)
         return self.dataArray
 
 class PPG:
