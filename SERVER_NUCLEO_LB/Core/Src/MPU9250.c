@@ -238,9 +238,8 @@ void initMPU9250()
   // It is possible to get a 4 kHz sample rate from the accelerometer by choosing 1 for
   // accel_fchoice_b bit [3]; in this case the bandwidth is 1.13 kHz
   readByte(ACCEL_CONFIG2, &c, 1);
-  writeByte(ACCEL_CONFIG2, c & ~0x0F); // Clear accel_fchoice_b (bit 3) and A_DLPFG (bits [2:0])
-  //writeByte(ACCEL_CONFIG2, c | 0x03); // Set accelerometer rate to 1 kHz and bandwidth to 41 Hz
-  writeByte(ACCEL_CONFIG2, c | 0x0B); // Set accelerometer rate to 1 kHz and bandwidth to 41 Hz
+  writeByte(ACCEL_CONFIG2, c & ~0x0F); // Clear accel_fchoice_b (bit 3) and A_DLPFG (b	its [2:0])
+  writeByte(ACCEL_CONFIG2, c | 0x06); // Set accelerometer rate to 1 kHz and bandwidth to 21 Hz
   readByte(ACCEL_CONFIG2, &c, 1);
   //0000 1011
 

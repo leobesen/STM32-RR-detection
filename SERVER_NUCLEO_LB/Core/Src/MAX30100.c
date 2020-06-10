@@ -14,15 +14,15 @@ void begin(void){
 
 	  uint8_t temp = 0;
 	  uint8_t mode = 0x03; // [0,7]
-	  bool temperature = true;
+	  bool temperature = false;
 	  bool spo2_hs = true;
-	  uint8_t spo2_sr = 6; // [0,7]
-	  uint8_t pulse_width = 3; // [0,3]
-	  uint8_t red_level = 0x05; // 0b00001111; // [0,15]
-	  uint8_t ir_level = 0x05; // [0,15]
-	  uint8_t hr_ready_int = true;
-	  uint8_t spo2_ready_int = true;
-	  uint8_t temp_ready_int = true;
+	  uint8_t spo2_sr = 1; // [0,7]
+	  uint8_t pulse_width = 0; // [0,3]
+	  uint8_t red_level = 0x0A; // 0b00001111; // [0,15]
+	  uint8_t ir_level = 0x0A; // [0,15]
+	  uint8_t hr_ready_int = false;
+	  uint8_t spo2_ready_int = false;
+	  uint8_t temp_ready_int = false;
 
 
 	  //Reset

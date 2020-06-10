@@ -93,7 +93,7 @@ void Error_Handler(void);
 #define STLINK_TX_Pin GPIO_PIN_7
 #define STLINK_TX_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
-#define PAYLOAD_LENGTH 48
+#define PAYLOAD_LENGTH 205
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

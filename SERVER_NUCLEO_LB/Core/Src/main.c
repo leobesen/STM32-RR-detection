@@ -39,7 +39,6 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -62,7 +61,10 @@ uint8_t ADSwrite[3];
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-void read_sensors(void);
+void read_acc(void);
+void read_fsr(void);
+void read_ppg(void);
+
 void get_buffer_values(uint8_t* buff);
 /* USER CODE END PFP */
 
@@ -88,10 +90,24 @@ int16_t rawData_MPU9250[3] = {0};
 
 uint16_t IR = 0, RED = 0;
 
-uint8_t ble_buffer[48] = {0};
-uint8_t buff_counter = 0;
-char flag_buffer_full = 0x00;
+uint8_t ble_buff_PPG[200] = {0};
+uint8_t ble_buff_ACC_FSR[140] = {0};
+
 char flag_reading_completed = 0x01;
+
+uint8_t prescaler_acc = 0;
+uint8_t prescaler_fsr = 0;
+uint8_t prescaler_send_pack = 0;
+
+uint8_t counter_acc = 0;
+uint8_t counter_ppg = 0;
+uint8_t counter_fsr = 0;
+
+char flag_ppg_buff_full = 0x00;
+char flag_acc_buff_full = 0x00;
+char flag_fsr_buff_full = 0x00;
+
+char buffer_select = 0x00;
 
 
 
@@ -162,7 +178,9 @@ int main(void)
 
    begin();
 
-   UTIL_SEQ_RegTask( 1<< READ_SENSORS_TASK, UTIL_SEQ_RFU, read_sensors );
+   UTIL_SEQ_RegTask( 1<< READ_ACC_TASK, UTIL_SEQ_RFU, read_acc );
+   UTIL_SEQ_RegTask( 1<< READ_FSR_TASK, UTIL_SEQ_RFU, read_fsr );
+   UTIL_SEQ_RegTask( 1<< READ_PPG_TASK, UTIL_SEQ_RFU, read_ppg );
 
   /* USER CODE END 2 */
 
@@ -269,68 +287,122 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void read_fsr(void){
+	/*
+	 * ADS1115
+	 * */
+	if(flag_fsr_buff_full == 0x00){
+		ADSwrite[0] = 0x01;
+		ADSwrite[1] = 0xC1;// 11000001
+		ADSwrite[2] = 0x83; // 10000011
+		HAL_I2C_Master_Transmit(&hi2c3, ADS1115_ADDRESS<<1,ADSwrite,3,100);
+		ADSwrite[0] = 0x00;
+		HAL_I2C_Master_Transmit(&hi2c3, ADS1115_ADDRESS<<1,ADSwrite,1,100);
+		HAL_Delay(1);
+		HAL_I2C_Master_Receive(&hi2c3, ADS1115_ADDRESS<<1,ADSwrite,2,100);
 
-void read_sensors(void){
+		ble_buff_ACC_FSR[0+counter_fsr] = ADSwrite[1];
+		ble_buff_ACC_FSR[1+counter_fsr] = ADSwrite[0];
 
-	if(flag_buffer_full == 0x00){
-		/*
-		 * MPU9250
-		 * */
+		if(counter_fsr == 18){
+			counter_fsr=0;
+			flag_fsr_buff_full = 0x01;
+		}else
+			counter_fsr+=2;
+	}
+	/*
+	 * BUFFER --> [0:19]
+	 * */
+	//HAL_GPIO_TogglePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
+}
+
+void read_acc(void){
+	/*
+	 * MPU9250
+	 * */
+	if(flag_acc_buff_full == 0x00){
 		readAccelData(rawData_MPU9250);
+		//X
+		ble_buff_ACC_FSR[20+counter_acc] = (rawData_MPU9250[0] & 0x00FF);
+		ble_buff_ACC_FSR[21+counter_acc] = ((rawData_MPU9250[0] >> 8) & 0x00FF);
+		//Y
+		ble_buff_ACC_FSR[60+counter_acc] = (rawData_MPU9250[1] & 0x00FF);
+		ble_buff_ACC_FSR[61+counter_acc] = ((rawData_MPU9250[1] >> 8) & 0x00FF);
+		//Z
+		ble_buff_ACC_FSR[100+counter_acc] = (rawData_MPU9250[2] & 0x00FF);
+		ble_buff_ACC_FSR[101+counter_acc] = ((rawData_MPU9250[2] >> 8) & 0x00FF);
 
-		ble_buffer[0 + buff_counter] = (rawData_MPU9250[0] & 0x00FF);
-		ble_buffer[1 + buff_counter] = ((rawData_MPU9250[0] >> 8) & 0x00FF);
+		if(counter_acc == 38){
+			counter_acc = 0;
+			flag_acc_buff_full = 0x01;
+		}else
+			counter_acc+=2;
+	}
+	/*
+	 * BUFFER --> [20:139]
+	 * */
+}
 
-		ble_buffer[2 + buff_counter] = (rawData_MPU9250[1] & 0x00FF);
-		ble_buffer[3 + buff_counter] = ((rawData_MPU9250[1] >> 8) & 0x00FF);
-		ble_buffer[4 + buff_counter] = (rawData_MPU9250[2] & 0x00FF);
-		ble_buffer[5 + buff_counter] = ((rawData_MPU9250[2] >> 8) & 0x00FF);
 
-		/*
-		 * MAX30100
-		 * */
-		//read_diodes(&IR, &RED);
-
+void read_ppg(void){
+	/*
+	 * MAX30100
+	 * */
+	if(flag_ppg_buff_full == 0){
 		readFIFO(&RED, &IR);
 
-		ble_buffer[6 + buff_counter] = (RED & 0x00FF);
-		ble_buffer[7 + buff_counter] = ((RED >> 8) & 0x00FF);
-		ble_buffer[8 + buff_counter] = (IR & 0x00FF);
-		ble_buffer[9 + buff_counter] = ((IR >> 8) & 0x00FF);
+		//ble_buffer[140+counter_ppg] = (RED & 0x00FF);
+		//ble_buffer[141+counter_ppg] = ((RED >> 8) & 0x00FF);
 
-		/*
-		 * ADS1115
-		 * */
-		ADSwrite[0] = 0x01;
-	    ADSwrite[1] = 0xC1;// 11000001
-	    ADSwrite[2] = 0x83; // 10000011
-	    HAL_I2C_Master_Transmit(&hi2c3, ADS1115_ADDRESS<<1,ADSwrite,3,100);
-	    ADSwrite[0] = 0x00;
-	    HAL_I2C_Master_Transmit(&hi2c3, ADS1115_ADDRESS<<1,ADSwrite,1,100);
-	    HAL_Delay(20);
-	    HAL_I2C_Master_Receive(&hi2c3, ADS1115_ADDRESS<<1,ADSwrite,2,100);
+		ble_buff_PPG[0+counter_ppg] = (IR & 0x00FF);
+		ble_buff_PPG[1+counter_ppg] = ((IR >> 8) & 0x00FF);
 
-		ble_buffer[10 + buff_counter] = ADSwrite[1];
-		ble_buffer[11 + buff_counter] = ADSwrite[0];
-
-		if(buff_counter == 36){
-			buff_counter = 0;
-			flag_buffer_full = 0x01;
-			//HAL_TIM_Base_Stop_IT(&htim16);
-			UTIL_SEQ_SetTask(1 << CFG_MY_TASK_NOTIFY_DATA, CFG_SCH_PRIO_0);
-		}else{
-			buff_counter+=12;
-			flag_buffer_full = 0x00;
-		}
-		flag_reading_completed = 0x00;
+		if(counter_ppg == 198){
+			counter_ppg = 0;
+			flag_ppg_buff_full = 0x01;
+		}else
+			counter_ppg+=2;
 	}
+	/*
+	 * BUFFER --> [140:539]
+	 * */
+	//HAL_GPIO_TogglePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
 }
 
 void get_buffer_values(uint8_t* buff){
-	for(int i = 0; i < PAYLOAD_LENGTH; i++)
-		buff[i] = ble_buffer[i];
-	flag_buffer_full = 0x00;
-	//HAL_TIM_Base_Start_IT(&htim16);
+
+	/*
+	 * buffer_select
+	 * 0 --> ACC and FSR - 140 Bytes
+	 * 1 --> PPG - 200 Bytes
+	 * */
+	if(buffer_select == 0x00){
+		buffer_select = 0x01; //select buffer for the next transmission
+		// preamble for acc and fsr data
+		buff[0] = 0x00;
+		buff[1] = 0xFA;
+		buff[2] = 0xAF;
+		buff[3] = 0x00;
+		// buffer fulfill
+		for(int i = 0; i < 140; i++)
+				buff[i+4] = ble_buff_ACC_FSR[i];
+		// enable read
+		flag_acc_buff_full = 0x00;
+		flag_fsr_buff_full = 0x00;
+	}else{
+		buffer_select = 0x00; //select buffer for the next transmission
+		// preamble for ppg data
+		buff[0] = 0x00;
+		buff[1] = 0xAF;
+		buff[2] = 0xFA;
+		buff[3] = 0x00;
+		// buffer fulfill
+		for(int i = 0; i < 200; i++)
+				buff[i+4] = ble_buff_PPG[i];
+		// enable read
+		flag_ppg_buff_full = 0x00;
+	}
+	HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
@@ -338,7 +410,26 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* Prevent unused argument(s) compilation warning */
   if(htim == &htim16){
 	  if(APP_BLE_Get_Server_Connection_Status() == APP_BLE_CONNECTED_SERVER){
-		  UTIL_SEQ_SetTask(1 << READ_SENSORS_TASK, CFG_SCH_PRIO_0);
+		  // Increment prescaler for fsr and acc
+		  prescaler_fsr++;
+		  prescaler_acc++;
+		  prescaler_send_pack++;
+		  // read ppg sensor - 100Hz
+		  UTIL_SEQ_SetTask(1 << READ_PPG_TASK, CFG_SCH_PRIO_0);
+		  // read fsr sensor - 10Hz
+		  if(prescaler_fsr == 10){
+			  prescaler_fsr = 0;
+			  UTIL_SEQ_SetTask(1 << READ_FSR_TASK, CFG_SCH_PRIO_0);
+		  }
+		  // read acc sensor - 20Hz
+		  if(prescaler_acc == 5){
+			  prescaler_acc = 0;
+			  UTIL_SEQ_SetTask(1 << READ_ACC_TASK, CFG_SCH_PRIO_0);
+		  }
+		  if(prescaler_send_pack == 50){
+			  UTIL_SEQ_SetTask(1 << CFG_MY_TASK_NOTIFY_DATA, CFG_SCH_PRIO_0);
+			  prescaler_send_pack = 0;
+		  }
 	  }
 
   }
