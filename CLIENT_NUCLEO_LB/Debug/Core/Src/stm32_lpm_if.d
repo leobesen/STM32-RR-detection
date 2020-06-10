@@ -1,5 +1,5 @@
 Core/Src/stm32_lpm_if.o: ../Core/Src/stm32_lpm_if.c \
- ../Core/Inc/stm32_lpm_if.h ../Utilities/lpm/tiny_lpm/stm32_lpm.h \
+ ../Core/Inc/stm32_lpm_if.h ../Core/Inc/stm32_lpm.h \
  ../Core/Inc/app_conf.h \
  ../Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/hw.h \
  ../Core/Inc/hw_conf.h ../Core/Inc/hw_if.h \
@@ -57,7 +57,7 @@ Core/Src/stm32_lpm_if.o: ../Core/Src/stm32_lpm_if.c \
 
 ../Core/Inc/stm32_lpm_if.h:
 
-../Utilities/lpm/tiny_lpm/stm32_lpm.h:
+../Core/Inc/stm32_lpm.h:
 
 ../Core/Inc/app_conf.h:
 

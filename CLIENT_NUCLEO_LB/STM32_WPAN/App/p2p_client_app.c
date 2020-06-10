@@ -543,7 +543,7 @@ void Gatt_Notification(P2P_Client_App_Notification_evt_t *pNotification)
 /* USER CODE BEGIN P2P_NOTIFICATION_INFO_RECEIVED_EVT */
 
 		transmit_CDC_messege(pNotification->DataTransfered.pPayload, PAYLOAD_LENGTH);
-    	HAL_GPIO_TogglePin(TEST_GPIO_Port, TEST_Pin);
+    	//HAL_GPIO_TogglePin(TEST_GPIO_Port, TEST_Pin);
     	HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
     break;
 

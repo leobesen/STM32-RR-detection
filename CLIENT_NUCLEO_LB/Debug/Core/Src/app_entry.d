@@ -101,7 +101,7 @@ Core/Src/app_entry.o: ../Core/Src/app_entry.c ../Core/Inc/app_common.h \
  ../Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/tl.h \
  ../Core/Inc/stm32_seq.h \
  ../Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/shci_tl.h \
- ../Utilities/lpm/tiny_lpm/stm32_lpm.h \
+ ../Core/Inc/stm32_lpm.h \
  ../Middlewares/ST/STM32_WPAN/utilities/dbg_trace.h
 
 ../Core/Inc/app_common.h:
@@ -320,6 +320,6 @@ Core/Src/app_entry.o: ../Core/Src/app_entry.c ../Core/Inc/app_common.h \
 
 ../Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/shci_tl.h:
 
-../Utilities/lpm/tiny_lpm/stm32_lpm.h:
+../Core/Inc/stm32_lpm.h:
 
 ../Middlewares/ST/STM32_WPAN/utilities/dbg_trace.h:

@@ -103,8 +103,7 @@ STM32_WPAN/App/app_ble.o: ../STM32_WPAN/App/app_ble.c \
  ../Core/Inc/stm32_seq.h \
  ../Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/shci/shci.h \
  ../Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/mbox_def.h \
- ../Utilities/lpm/tiny_lpm/stm32_lpm.h \
- ../Middlewares/ST/STM32_WPAN/utilities/otp.h \
+ ../Core/Inc/stm32_lpm.h ../Middlewares/ST/STM32_WPAN/utilities/otp.h \
  ../Middlewares/ST/STM32_WPAN/utilities/utilities_common.h \
  ../STM32_WPAN/App/p2p_client_app.h ../Core/Inc/main.h
 
@@ -324,7 +323,7 @@ STM32_WPAN/App/app_ble.o: ../STM32_WPAN/App/app_ble.c \
 
 ../Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/mbox_def.h:
 
-../Utilities/lpm/tiny_lpm/stm32_lpm.h:
+../Core/Inc/stm32_lpm.h:
 
 ../Middlewares/ST/STM32_WPAN/utilities/otp.h:
 

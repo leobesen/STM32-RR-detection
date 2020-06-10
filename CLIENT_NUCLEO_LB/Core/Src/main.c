@@ -17,7 +17,6 @@
   ******************************************************************************
   */
 /* USER CODE END Header */
-
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "rf.h"
@@ -196,28 +195,47 @@ void SystemClock_Config(void)
 void transmit_CDC_messege(uint8_t* Buff, uint16_t Len){
 
 	uint8_t result = 0;
-	char t[100];
+	char t[800];
+	uint8_t t_i[800];
 	char aux[10];
-	uint16_t dest[6];
+	uint16_t dest[102] = {0};
+	unsigned size;
 
-	for(int j=0;j<PAYLOAD_LENGTH;j+=(PAYLOAD_LENGTH/4)){
-		memset(t,0,100);
+	memset(t,0,800);
+	memset(t_i,0,800);
+	memset(aux,0,10);
 
-		dest[0] = (uint16_t)(((uint16_t)Buff[1+j] << 8) | Buff[0+j]);  // Turn the MSB and LSB into a signed 16-bit value
-		dest[1] = (uint16_t)(((uint16_t)Buff[3+j] << 8) | Buff[2+j]);
-		dest[2] = (uint16_t)(((uint16_t)Buff[5+j] << 8) | Buff[4+j]);
-		dest[3] = (uint16_t)(((uint16_t)Buff[7+j] << 8) | Buff[6+j]);
-		dest[4] = (uint16_t)(((uint16_t)Buff[9+j] << 8) | Buff[8+j]);
-		dest[5] = (uint16_t)(((uint16_t)Buff[11+j] << 8) | Buff[10+j]);
-
-		for(int i=0;i<5;i++){
+	if((Buff[0]==0x00)&&(Buff[1]==0xFA)&&(Buff[2]==0xAF)&&(Buff[3]==0x00)){
+		for(int i=0; i<72; i++){
+			dest[i] = (uint16_t)(((uint16_t)Buff[(2*i+1)] << 8) | Buff[2*i]);  // Turn the MSB and LSB into a signed 16-bit value
+		}
+		for(int i=0;i<71;i++){
 			sprintf(aux,"%u,",dest[i]);
 			strcat(t,aux);
+			memset(aux,0,10);
 		}
-		sprintf(aux,"%u\n",dest[5]);
+		sprintf(aux,"%u\n",dest[71]);
 		strcat(t,aux);
-		result = CDC_Transmit_FS((uint8_t*)t, (unsigned)strlen(t));
 	}
+	if((Buff[0]==0x00)&&(Buff[1]==0xAF)&&(Buff[2]==0xFA)&&(Buff[3]==0x00)){
+		for(int i=0; i<102; i++){
+			dest[i] = (uint16_t)(((uint16_t)Buff[(2*i+1)] << 8) | Buff[2*i]);  // Turn the MSB and LSB into a signed 16-bit value
+		}
+		for(int i=0;i<101;i++){
+			sprintf(aux,"%u,",dest[i]);
+			strcat(t,aux);
+			memset(aux,0,10);
+		}
+		sprintf(aux,"%u\n",dest[101]);
+		strcat(t,aux);
+	}
+
+	for(int i=0;i<strlen(t);i++){
+		t_i[i] = (uint8_t)t[i];
+	}
+
+	size = (unsigned)strlen(t_i);
+	result = CDC_Transmit_FS(t_i, size);
 
 
 	if (result == 1)
