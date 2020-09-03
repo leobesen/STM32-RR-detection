@@ -87,7 +87,7 @@ extern void transmit_CDC_messege(uint8_t*, uint16_t);
 #define STLINK_TX_Pin GPIO_PIN_7
 #define STLINK_TX_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
-#define PAYLOAD_LENGTH 205
+#define PAYLOAD_LENGTH 123
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

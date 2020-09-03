@@ -42,6 +42,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define BLE_PACK_ID 0x28
+#define BLE_FSR_PACK 0x01
+#define BLE_ACC_PACK 0x02
+#define BLE_PPG_PACK 0x03
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -194,39 +198,74 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 void transmit_CDC_messege(uint8_t* Buff, uint16_t Len){
 
+	uint8_t buffer_receive[PAYLOAD_LENGTH-3] = {0};
+
 	uint8_t result = 0;
 	char t[800];
 	uint8_t t_i[800];
-	char aux[10];
-	uint16_t dest[102] = {0};
+	char aux[12];
+	uint16_t dest[60] = {0};
 	unsigned size;
 
 	memset(t,0,800);
 	memset(t_i,0,800);
 	memset(aux,0,10);
 
-	if((Buff[0]==0x00)&&(Buff[1]==0xFA)&&(Buff[2]==0xAF)&&(Buff[3]==0x00)){
-		for(int i=0; i<72; i++){
-			dest[i] = (uint16_t)(((uint16_t)Buff[(2*i+1)] << 8) | Buff[2*i]);  // Turn the MSB and LSB into a signed 16-bit value
+	for(int i=0;i<PAYLOAD_LENGTH-3;i++)
+		Buff[i+3] = buffer_receive[i];
+
+	/*
+	 * 	FSR - 10 samples
+	 * */
+	if((Buff[0]==BLE_PACK_ID)&&(Buff[1]==BLE_FSR_PACK)&&(Buff[2]==0x01)){
+		for(int i=0; i<10; i++){
+			dest[i] = (uint16_t)(((uint16_t)buffer_receive[(2*i+1)] << 8) | buffer_receive[2*i]);  // Turn the MSB and LSB into a signed 16-bit value
 		}
-		for(int i=0;i<71;i++){
+		sprintf(aux,"28,%u,%u,",Buff[1],Buff[2]);
+		strcat(t,aux);
+		memset(aux,0,10);
+		for(int i=0;i<9;i++){
 			sprintf(aux,"%u,",dest[i]);
 			strcat(t,aux);
 			memset(aux,0,10);
 		}
-		sprintf(aux,"%u\n",dest[71]);
+		sprintf(aux,"%u\n",dest[9]);
 		strcat(t,aux);
 	}
-	if((Buff[0]==0x00)&&(Buff[1]==0xAF)&&(Buff[2]==0xFA)&&(Buff[3]==0x00)){
-		for(int i=0; i<102; i++){
-			dest[i] = (uint16_t)(((uint16_t)Buff[(2*i+1)] << 8) | Buff[2*i]);  // Turn the MSB and LSB into a signed 16-bit value
+	/*
+	 * 	ACC - 60 samples - 15 samples of each acc
+	 * */
+	if((Buff[0]==BLE_PACK_ID)&&(Buff[1]==BLE_ACC_PACK)){
+		for(int i=0; i<60; i++){
+			dest[i] = (uint16_t)(((uint16_t)buffer_receive[(2*i+1)] << 8) | buffer_receive[2*i]);  // Turn the MSB and LSB into a signed 16-bit value
 		}
-		for(int i=0;i<101;i++){
+		sprintf(aux,"28,%u,%u,",Buff[1],Buff[2]);
+		strcat(t,aux);
+		memset(aux,0,10);
+		for(int i=0;i<59;i++){
 			sprintf(aux,"%u,",dest[i]);
 			strcat(t,aux);
 			memset(aux,0,10);
 		}
-		sprintf(aux,"%u\n",dest[101]);
+		sprintf(aux,"%u\n",dest[59]);
+		strcat(t,aux);
+	}
+	/*
+	 * 	PPG - 50 samples - 25 samples of each led
+	 * */
+	if((Buff[0]==BLE_PACK_ID)&&(Buff[1]==BLE_PPG_PACK)){
+		for(int i=0; i<50; i++){
+			dest[i] = (uint16_t)(((uint16_t)buffer_receive[(2*i+1)] << 8) | buffer_receive[2*i]);  // Turn the MSB and LSB into a signed 16-bit value
+		}
+		sprintf(aux,"28,%u,%u,",Buff[1],Buff[2]);
+		strcat(t,aux);
+		memset(aux,0,10);
+		for(int i=0;i<49;i++){
+			sprintf(aux,"%u,",dest[i]);
+			strcat(t,aux);
+			memset(aux,0,10);
+		}
+		sprintf(aux,"%u\n",dest[49]);
 		strcat(t,aux);
 	}
 
