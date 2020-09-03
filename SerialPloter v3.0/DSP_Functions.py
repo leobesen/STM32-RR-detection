@@ -10,9 +10,12 @@ class Functions:
         self.imfs_number = 5
         self.eemd = EEMD()
         self.eemd.extrema_detection="parabol"
-        self.samplingFrequency = 40
-        self.samplingInterval = 1 / 40
-        self.time = np.arange(0, 5, self.samplingInterval)
+        self.samplingFrequency_PPG = 100
+        self.samplingFrequency_ACC = 20
+        self.samplingFrequency_FSR = 10
+        self.samplingInterval_PPG = 1 / 100
+        self.samplingInterval_ACC = 1 / 20
+        self.samplingInterval_FSR = 1 / 10
 
     
     def dcRemoval(self,x, w):
@@ -37,17 +40,19 @@ class Functions:
         eIMFs = self.eemd.eemd(ppg_signal)
         return eIMFs
 
-    def fft(self, signal, l):
+    def fft(self, signal, sr, l):
         
+
         fourierTransform = fftpack.fft(signal,n=l)
         amplitude = np.abs(fourierTransform)
-        sample_freq = fftpack.fftfreq(len(signal),d=self.samplingInterval)
-        
+        sample_freq = fftpack.fftfreq(len(signal),d=1/sr)
         amp_freq = np.array([amplitude,sample_freq])
-        amp_pos = amp_freq[0,1:].argmax()
+        #print(amp_freq.shape)
+        amp_pos = amp_freq[0][1:len(amp_freq[0]/2)].argmax()
+        peak_freq = amp_freq[1][amp_pos]
         
-        peak_freq = amp_freq[1,amp_pos+1]
-        print(peak_freq)
         #plt.plot(sample_freq[1:int(len(sample_freq)/2)], amplitude[1:int(len(sample_freq)/2)],'b-') # without DC
         #plt.show()
+
+        return peak_freq
     
