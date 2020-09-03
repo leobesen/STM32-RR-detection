@@ -212,7 +212,7 @@ void transmit_CDC_messege(uint8_t* Buff, uint16_t Len){
 	memset(aux,0,10);
 
 	for(int i=0;i<PAYLOAD_LENGTH-3;i++)
-		Buff[i+3] = buffer_receive[i];
+		buffer_receive[i] = Buff[i+3];
 
 	/*
 	 * 	FSR - 10 samples
