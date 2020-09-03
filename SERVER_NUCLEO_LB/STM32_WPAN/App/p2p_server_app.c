@@ -84,7 +84,9 @@ PLACE_IN_SECTION("BLE_APP_CONTEXT") static P2P_Server_App_Context_t P2P_Server_A
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
-static void P2PS_Send_Notification_Task(void);
+static void P2PS_Send_Notification_Task_FSR(void);
+static void P2PS_Send_Notification_Task_ACC(void);
+static void P2PS_Send_Notification_Task_PPG(void);
 static void P2PS_APP_context_Init(void);
 static void P2PS_DataChange_Timer_Callback(void);
 /* USER CODE END PFP */
@@ -175,7 +177,10 @@ void P2PS_APP_Init(void)
 {
 /* USER CODE BEGIN P2PS_APP_Init */
 	/* Register task used to update the characteristic (send the notification) */
-		UTIL_SEQ_RegTask(1 << CFG_MY_TASK_NOTIFY_DATA ,UTIL_SEQ_RFU, P2PS_Send_Notification_Task);
+		//UTIL_SEQ_RegTask(1 << CFG_MY_TASK_NOTIFY_DATA ,UTIL_SEQ_RFU, P2PS_Send_Notification_Task);
+		UTIL_SEQ_RegTask(1 << SEND_FSR_DATA_BLE_TASK, UTIL_SEQ_RFU, P2PS_Send_Notification_Task_FSR);
+		UTIL_SEQ_RegTask(1 << SEND_ACC_DATA_BLE_TASK, UTIL_SEQ_RFU, P2PS_Send_Notification_Task_ACC);
+		UTIL_SEQ_RegTask(1 << SEND_PPG_DATA_BLE_TASK, UTIL_SEQ_RFU, P2PS_Send_Notification_Task_PPG);
 
 	  /* Create timer to change the Temperature and update charecteristic */
 //	  HW_TS_Create(CFG_TIM_PROC_ID_ISR,
@@ -194,14 +199,50 @@ void P2PS_APP_Init(void)
 
 /* USER CODE BEGIN FD */
 
-static void P2PS_Send_Notification_Task(void)
+static void P2PS_Send_Notification_Task_FSR(void)
 {
   /* Update P2P_NOTIFY characteristic */
 	uint8_t value[PAYLOAD_LENGTH] = {0};
 
 	if(P2P_Server_App_Context.NotificationStatus)
 	{
-		get_buffer_values(&value[0]);
+		prepare_fsr_ble_pack(&value[0]);
+//		HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
+		P2PS_STM_App_Update_Char(P2P_NOTIFY_CHAR_UUID,&value[0]);
+	}
+	else
+	{
+
+	}
+
+  return;
+}
+static void P2PS_Send_Notification_Task_ACC(void)
+{
+  /* Update P2P_NOTIFY characteristic */
+	uint8_t value[PAYLOAD_LENGTH] = {0};
+
+	if(P2P_Server_App_Context.NotificationStatus)
+	{
+		prepare_acc_ble_pack(&value[0]);
+//		HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
+		P2PS_STM_App_Update_Char(P2P_NOTIFY_CHAR_UUID,&value[0]);
+	}
+	else
+	{
+
+	}
+
+  return;
+}
+static void P2PS_Send_Notification_Task_PPG(void)
+{
+  /* Update P2P_NOTIFY characteristic */
+	uint8_t value[PAYLOAD_LENGTH] = {0};
+
+	if(P2P_Server_App_Context.NotificationStatus)
+	{
+		prepare_ppg_ble_pack(&value[0]);
 //		HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
 		P2PS_STM_App_Update_Char(P2P_NOTIFY_CHAR_UUID,&value[0]);
 	}

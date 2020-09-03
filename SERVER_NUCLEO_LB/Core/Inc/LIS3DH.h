@@ -213,6 +213,7 @@ typedef struct
 	
 }LIS3DH_InitTypeDef;
 
+
 // Accelerometer raw data
 typedef struct 
 {
@@ -234,21 +235,21 @@ typedef struct
 //Functions prototypes
 //Private functions
 //1. Write IO
-void LIS3DH_WriteIO(uint8_t reg, uint8_t *dataW, uint8_t size);
+void LIS3DH_WriteIO(accConfig acc, uint8_t reg, uint8_t *dataW, uint8_t size);
 //2. Read IO
-void LIS3DH_ReadIO(uint8_t reg, uint8_t *dataR, uint8_t size);
+void LIS3DH_ReadIO(accConfig acc, uint8_t reg, uint8_t *dataR, uint8_t size);
 
 
 //1. Accelerometer initialise function
-char* LIS3DH_Init(SPI_HandleTypeDef *accSPI, LIS3DH_InitTypeDef *accInitDef);
+char* LIS3DH_Init(accConfig acc, LIS3DH_InitTypeDef *accInitDef);
 //2. Get Accelerometer raw data
-LIS3DH_DataRaw LIS3DH_GetDataRaw(LIS3DH_Operation_Mode);
+accDataRaw LIS3DH_GetDataRaw(accConfig acc, LIS3DH_Operation_Mode);
 //3. Get Accelerometer mg data
-LIS3DH_DataScaled LIS3DH_GetDataScaled(LIS3DH_Operation_Mode);
+LIS3DH_DataScaled LIS3DH_GetDataScaled(accConfig acc, LIS3DH_Operation_Mode);
 // Get data filtered
-LIS3DH_DataRaw LIS3DH_GetDataFilter(LIS3DH_Operation_Mode);
+accDataRaw LIS3DH_GetDataFilter(accConfig acc, LIS3DH_Operation_Mode);
 //4. Poll for Data Ready
-bool LIS3DH_PollDRDY(uint32_t msTimeout);
+bool LIS3DH_PollDRDY(accConfig acc, uint32_t msTimeout);
 
 //** Calibration functions **//
 //1. Set X-Axis calibrate

@@ -167,7 +167,7 @@
 /**
  * Maximum supported ATT_MTU size
  */
-#define CFG_BLE_MAX_ATT_MTU             (250)
+#define CFG_BLE_MAX_ATT_MTU             (156)
 
 /**
  * Size of the storage area for Attribute values
@@ -488,7 +488,9 @@ typedef enum
   READ_ACC_TASK,
   READ_FSR_TASK,
   READ_PPG_TASK,
-  SEND_DATA_BLE_TASK,
+  SEND_ACC_DATA_BLE_TASK,
+  SEND_FSR_DATA_BLE_TASK,
+  SEND_PPG_DATA_BLE_TASK,
 /* USER CODE END CFG_Task_Id_With_HCI_Cmd_t */
     CFG_LAST_TASK_ID_WITH_HCICMD,                                               /**< Shall be LAST in the list */
 } CFG_Task_Id_With_HCI_Cmd_t;
@@ -512,6 +514,7 @@ typedef enum
 typedef enum
 {
     CFG_SCH_PRIO_0,
+	CFG_SCH_PRIO_1,
     CFG_PRIO_NBR,
 } CFG_SCH_Prio_Id_t;
 

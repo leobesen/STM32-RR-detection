@@ -30,7 +30,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 //#include "LIS3DH.h"
-#include "LIS3DH_I2C.h"
+#include "LIS3DH.h"
 #include "MPU9250.h"
 #include "MAX30100.h"
 #include "app_conf.h"
@@ -43,6 +43,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define BLE_PACK_ID 0x28
+#define BLE_FSR_PACK 0x01
+#define BLE_ACC_PACK 0x02
+#define BLE_PPG_PACK 0x03
 #define ADS1115_ADDRESS 0x48
 uint8_t ADSwrite[3];
 /* USER CODE END PD */
@@ -65,21 +69,47 @@ void read_acc(void);
 void read_fsr(void);
 void read_ppg(void);
 
-void get_buffer_values(uint8_t* buff);
+void prepare_acc_ble_pack(uint8_t* buff);
+void prepare_fsr_ble_pack(uint8_t* buff);
+void prepare_ppg_ble_pack(uint8_t* buff);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-//LIS3DH_InitTypeDef myAccConfigDef = {
-//		DATARATE_400,
-//		FS_2,
-//		XYZ_ENABLE,
-//		false,
-//		HIGH_RESOLUTION
-//};
+LIS3DH_InitTypeDef myAccConfigDef = {
+		DATARATE_400,
+		FS_2,
+		XYZ_ENABLE,
+		false,
+		HIGH_RESOLUTION
+};
 
-uint8_t WAI_LIS3DH = 0;
+accConfig acc1_1= {
+		&hspi1,
+		SPI1_CS_1_GPIO_Port,
+		SPI1_CS_1_Pin
+};
+accConfig acc1_2 = {
+		&hspi1,
+		SPI1_CS_2_GPIO_Port,
+		SPI1_CS_2_Pin
+};
+accConfig acc2_1 = {
+		&hspi2,
+		SPI2_CS_1_GPIO_Port,
+		SPI2_CS_1_Pin
+};
+accConfig acc2_2 = {
+		&hspi2,
+		SPI2_CS_2_GPIO_Port,
+		SPI2_CS_2_Pin
+};
+
+accDataRaw acc_data_raw[4];
+
+uint8_t WAI_LIS3DH_1 = 0;
+uint8_t WAI_LIS3DH_2 = 0;
 uint8_t WAI_MPU9250 = 0;
 
 uint8_t reg = MAX30100_PART_ID;
@@ -90,8 +120,10 @@ int16_t rawData_MPU9250[3] = {0};
 
 uint16_t IR = 0, RED = 0;
 
-uint8_t ble_buff_PPG[200] = {0};
-uint8_t ble_buff_ACC_FSR[140] = {0};
+// buffers for 1 second of storage
+uint8_t ble_buff_PPG[2][200] = {0};
+uint8_t ble_buff_ACC[4][120] = {0};
+uint8_t ble_buff_FSR[20] = {0};
 
 char flag_reading_completed = 0x01;
 
@@ -103,8 +135,9 @@ uint8_t counter_acc = 0;
 uint8_t counter_ppg = 0;
 uint8_t counter_fsr = 0;
 
-char flag_ppg_buff_full = 0x00;
-char flag_acc_buff_full = 0x00;
+char acc_pack_number = 0x00;
+char ppg_pack_number = 0x00;
+
 char flag_fsr_buff_full = 0x00;
 
 char buffer_select = 0x00;
@@ -159,16 +192,19 @@ int main(void)
   /*
    * LIS3DH
    * */
-  //WAI_LIS3DH = read_id();
-  //begin_LIS3DH_I2C(LIS3DH_G_CHIP_ADDR, LIS3DH_DR_NR_LP_400HZ, LIS3DH_FS_2G);
+  LIS3DH_ReadIO(acc1_1, WHO_AM_I, &WAI_LIS3DH_1, 1);
+  LIS3DH_Init(acc1_1, &myAccConfigDef);
+
+  LIS3DH_ReadIO(acc1_2, WHO_AM_I, &WAI_LIS3DH_2, 1);
+  LIS3DH_Init(acc1_2, &myAccConfigDef);
 
   /*
    * MPU9250
    * */
 
-   readByte(WHO_AM_I_MPU9250, &WAI_MPU9250, 1);
+   readByte(acc2_1, WHO_AM_I_MPU9250, &WAI_MPU9250, 1);
 
-   initMPU9250();
+   initMPU9250(acc2_1);
 
   /*
    * MAX30100
@@ -195,6 +231,7 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 	  UTIL_SEQ_Run(UTIL_SEQ_DEFAULT);
+
 
   }
   /* USER CODE END 3 */
@@ -291,25 +328,23 @@ void read_fsr(void){
 	/*
 	 * ADS1115
 	 * */
-	if(flag_fsr_buff_full == 0x00){
-		ADSwrite[0] = 0x01;
-		ADSwrite[1] = 0xC1;// 11000001
-		ADSwrite[2] = 0x83; // 10000011
-		HAL_I2C_Master_Transmit(&hi2c3, ADS1115_ADDRESS<<1,ADSwrite,3,100);
-		ADSwrite[0] = 0x00;
-		HAL_I2C_Master_Transmit(&hi2c3, ADS1115_ADDRESS<<1,ADSwrite,1,100);
-		HAL_Delay(1);
-		HAL_I2C_Master_Receive(&hi2c3, ADS1115_ADDRESS<<1,ADSwrite,2,100);
+	ADSwrite[0] = 0x01;
+	ADSwrite[1] = 0xC1;// 11000001
+	ADSwrite[2] = 0x83; // 10000011
+	HAL_I2C_Master_Transmit(&hi2c3, ADS1115_ADDRESS<<1,ADSwrite,3,100);
+	ADSwrite[0] = 0x00;
+	HAL_I2C_Master_Transmit(&hi2c3, ADS1115_ADDRESS<<1,ADSwrite,1,100);
+	HAL_Delay(1);
+	HAL_I2C_Master_Receive(&hi2c3, ADS1115_ADDRESS<<1,ADSwrite,2,100);
 
-		ble_buff_ACC_FSR[0+counter_fsr] = ADSwrite[1];
-		ble_buff_ACC_FSR[1+counter_fsr] = ADSwrite[0];
+	ble_buff_FSR[0+counter_fsr] = ADSwrite[1];
+	ble_buff_FSR[1+counter_fsr] = ADSwrite[0];
 
-		if(counter_fsr == 18){
-			counter_fsr=0;
-			flag_fsr_buff_full = 0x01;
-		}else
-			counter_fsr+=2;
-	}
+	if(counter_fsr == 18){
+		counter_fsr=0;
+		UTIL_SEQ_SetTask(1 << SEND_FSR_DATA_BLE_TASK, CFG_SCH_PRIO_1);
+	}else
+		counter_fsr+=2;
 	/*
 	 * BUFFER --> [0:19]
 	 * */
@@ -317,30 +352,48 @@ void read_fsr(void){
 }
 
 void read_acc(void){
-	/*
-	 * MPU9250
-	 * */
-	if(flag_acc_buff_full == 0x00){
-		readAccelData(rawData_MPU9250);
-		//X
-		ble_buff_ACC_FSR[20+counter_acc] = (rawData_MPU9250[0] & 0x00FF);
-		ble_buff_ACC_FSR[21+counter_acc] = ((rawData_MPU9250[0] >> 8) & 0x00FF);
-		//Y
-		ble_buff_ACC_FSR[60+counter_acc] = (rawData_MPU9250[1] & 0x00FF);
-		ble_buff_ACC_FSR[61+counter_acc] = ((rawData_MPU9250[1] >> 8) & 0x00FF);
-		//Z
-		ble_buff_ACC_FSR[100+counter_acc] = (rawData_MPU9250[2] & 0x00FF);
-		ble_buff_ACC_FSR[101+counter_acc] = ((rawData_MPU9250[2] >> 8) & 0x00FF);
 
-		if(counter_acc == 38){
-			counter_acc = 0;
-			flag_acc_buff_full = 0x01;
-		}else
-			counter_acc+=2;
+	acc_data_raw[0] = LIS3DH_GetDataRaw(acc1_1, HIGH_RESOLUTION);
+	acc_data_raw[1] = LIS3DH_GetDataRaw(acc1_2, HIGH_RESOLUTION);
+	acc_data_raw[2] = readAccelData(acc2_1);
+
+	for(int i=0;i<4;i++){
+		//X
+		ble_buff_ACC[i][0+counter_acc] = (acc_data_raw[i].x & 0x00FF);
+		ble_buff_ACC[i][1+counter_acc] = ((acc_data_raw[i].x >> 8) & 0x00FF);
+		//Y
+		ble_buff_ACC[i][2+counter_acc] = (acc_data_raw[i].y & 0x00FF);
+		ble_buff_ACC[i][3+counter_acc] = ((acc_data_raw[i].y >> 8) & 0x00FF);
+		//Z
+		ble_buff_ACC[i][4+counter_acc] = (acc_data_raw[i].z & 0x00FF);
+		ble_buff_ACC[i][5+counter_acc] = ((acc_data_raw[i].z >> 8) & 0x00FF);
 	}
-	/*
-	 * BUFFER --> [20:139]
-	 * */
+	counter_acc+=6;
+
+	if(counter_acc == 30){
+		// send first pack
+		acc_pack_number = 0x01;
+		UTIL_SEQ_SetTask(1 << SEND_ACC_DATA_BLE_TASK, CFG_SCH_PRIO_1);
+	}
+	if(counter_acc == 60){
+		// send second pack
+		acc_pack_number = 0x02;
+		UTIL_SEQ_SetTask(1 << SEND_ACC_DATA_BLE_TASK, CFG_SCH_PRIO_1);
+	}
+	if(counter_acc == 90){
+		// send third pack
+		acc_pack_number = 0x03;
+		UTIL_SEQ_SetTask(1 << SEND_ACC_DATA_BLE_TASK, CFG_SCH_PRIO_1);
+	}
+	if(counter_acc == 120){
+		// send fourth pack
+		acc_pack_number = 0x04;
+		UTIL_SEQ_SetTask(1 << SEND_ACC_DATA_BLE_TASK, CFG_SCH_PRIO_1);
+	}
+
+	if(counter_acc == 120)
+		counter_acc = 0;
+
 }
 
 
@@ -348,61 +401,161 @@ void read_ppg(void){
 	/*
 	 * MAX30100
 	 * */
-	if(flag_ppg_buff_full == 0){
-		readFIFO(&RED, &IR);
+	readFIFO(&RED, &IR);
 
-		//ble_buffer[140+counter_ppg] = (RED & 0x00FF);
-		//ble_buffer[141+counter_ppg] = ((RED >> 8) & 0x00FF);
+	ble_buff_PPG[0][0+counter_ppg] = (RED & 0x00FF);
+	ble_buff_PPG[0][1+counter_ppg] = ((RED >> 8) & 0x00FF);
 
-		ble_buff_PPG[0+counter_ppg] = (IR & 0x00FF);
-		ble_buff_PPG[1+counter_ppg] = ((IR >> 8) & 0x00FF);
+	ble_buff_PPG[1][0+counter_ppg] = (IR & 0x00FF);
+	ble_buff_PPG[1][1+counter_ppg] = ((IR >> 8) & 0x00FF);
 
-		if(counter_ppg == 198){
-			counter_ppg = 0;
-			flag_ppg_buff_full = 0x01;
-		}else
-			counter_ppg+=2;
+	counter_ppg+=2;
+
+	if(counter_ppg == 50){
+		// send first pack
+		ppg_pack_number = 0x01;
+		UTIL_SEQ_SetTask(1 << SEND_PPG_DATA_BLE_TASK, CFG_SCH_PRIO_1);
 	}
-	/*
-	 * BUFFER --> [140:539]
-	 * */
-	//HAL_GPIO_TogglePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
+	if(counter_ppg == 100){
+		// send second pack
+		ppg_pack_number = 0x02;
+		UTIL_SEQ_SetTask(1 << SEND_PPG_DATA_BLE_TASK, CFG_SCH_PRIO_1);
+	}
+	if(counter_ppg == 150){
+		// send third pack
+		ppg_pack_number = 0x03;
+		UTIL_SEQ_SetTask(1 << SEND_PPG_DATA_BLE_TASK, CFG_SCH_PRIO_1);
+	}
+	if(counter_ppg == 200){
+		// send fourth pack
+		ppg_pack_number = 0x04;
+		UTIL_SEQ_SetTask(1 << SEND_PPG_DATA_BLE_TASK, CFG_SCH_PRIO_1);
+	}
+
+	if(counter_ppg == 200)
+		counter_ppg = 0;
+
 }
 
-void get_buffer_values(uint8_t* buff){
+void prepare_fsr_ble_pack(uint8_t* buff){
 
-	/*
-	 * buffer_select
-	 * 0 --> ACC and FSR - 140 Bytes
-	 * 1 --> PPG - 200 Bytes
-	 * */
-	if(buffer_select == 0x00){
-		buffer_select = 0x01; //select buffer for the next transmission
-		// preamble for acc and fsr data
-		buff[0] = 0x00;
-		buff[1] = 0xFA;
-		buff[2] = 0xAF;
-		buff[3] = 0x00;
-		// buffer fulfill
-		for(int i = 0; i < 140; i++)
-				buff[i+4] = ble_buff_ACC_FSR[i];
-		// enable read
-		flag_acc_buff_full = 0x00;
-		flag_fsr_buff_full = 0x00;
-	}else{
-		buffer_select = 0x00; //select buffer for the next transmission
-		// preamble for ppg data
-		buff[0] = 0x00;
-		buff[1] = 0xAF;
-		buff[2] = 0xFA;
-		buff[3] = 0x00;
-		// buffer fulfill
-		for(int i = 0; i < 200; i++)
-				buff[i+4] = ble_buff_PPG[i];
-		// enable read
-		flag_ppg_buff_full = 0x00;
+	buff[0] = BLE_PACK_ID;
+	buff[1] = BLE_FSR_PACK;
+	buff[2] = 0x01;
+	for(int i=3;i<23;i++)
+		buff[i] = ble_buff_FSR[i-3];
+
+}
+
+void prepare_acc_ble_pack(uint8_t* buff){
+
+	uint8_t acc_buffer[123] = {0};
+
+	if(acc_pack_number != 0x00){
+		switch(acc_pack_number){
+			case 0x01:
+				acc_buffer[0] = BLE_PACK_ID;
+				acc_buffer[1] = BLE_ACC_PACK;
+				acc_buffer[2] = acc_pack_number;
+				for(int i=0;i<30;i++){
+					acc_buffer[3 + i] = ble_buff_ACC[0][i];
+					acc_buffer[33 + i] = ble_buff_ACC[1][i];
+					acc_buffer[63 + i] = ble_buff_ACC[2][i];
+					acc_buffer[93 + i] = ble_buff_ACC[3][i];
+				}
+				break;
+			case 0x02:
+				acc_buffer[0] = BLE_PACK_ID;
+				acc_buffer[1] = BLE_ACC_PACK;
+				acc_buffer[2] = acc_pack_number;
+				for(int i=30;i<60;i++){
+					acc_buffer[3 + i - 30] = ble_buff_ACC[0][i];
+					acc_buffer[33 + i- 30] = ble_buff_ACC[1][i];
+					acc_buffer[63 + i- 30] = ble_buff_ACC[2][i];
+					acc_buffer[93 + i - 30] = ble_buff_ACC[3][i];
+				}
+				break;
+			case 0x03:
+				acc_buffer[0] = BLE_PACK_ID;
+				acc_buffer[1] = BLE_ACC_PACK;
+				acc_buffer[2] = acc_pack_number;
+				for(int i=60;i<90;i++){
+					acc_buffer[3 + i - 60] = ble_buff_ACC[0][i];
+					acc_buffer[33 + i - 60] = ble_buff_ACC[1][i];
+					acc_buffer[63 + i - 60] = ble_buff_ACC[2][i];
+					acc_buffer[93 + i - 60] = ble_buff_ACC[3][i];
+				}
+				break;
+			case 0x04:
+				acc_buffer[0] = BLE_PACK_ID;
+				acc_buffer[1] = BLE_ACC_PACK;
+				acc_buffer[2] = acc_pack_number;
+				for(int i=90;i<120;i++){
+					acc_buffer[3 + i - 90] = ble_buff_ACC[0][i];
+					acc_buffer[33 + i - 90] = ble_buff_ACC[1][i];
+					acc_buffer[63 + i - 90] = ble_buff_ACC[2][i];
+					acc_buffer[93 + i - 90] = ble_buff_ACC[3][i];
+				}
+				break;
+			default:
+				acc_pack_number = 0x00;
+				break;
+		}
+		acc_pack_number = 0x00;
+		for(int i=0;i<123;i++)
+			buff[i] = acc_buffer[i];
 	}
-	HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
+}
+void prepare_ppg_ble_pack(uint8_t* buff){
+
+	uint8_t ppg_buffer[103] = {0};
+
+	if(ppg_pack_number != 0x00){
+		switch(ppg_pack_number){
+			case 0x01:
+				ppg_buffer[0] = BLE_PACK_ID;
+				ppg_buffer[1] = BLE_PPG_PACK;
+				ppg_buffer[2] = ppg_pack_number;
+				for(int i=0;i<50;i++){
+					ppg_buffer[3 + i] = ble_buff_PPG[0][i];
+					ppg_buffer[53 + i] = ble_buff_PPG[1][i];
+				}
+				break;
+			case 0x02:
+				ppg_buffer[0] = BLE_PACK_ID;
+				ppg_buffer[1] = BLE_PPG_PACK;
+				ppg_buffer[2] = ppg_pack_number;
+				for(int i=50;i<100;i++){
+					ppg_buffer[3 + i - 50] = ble_buff_PPG[0][i];
+					ppg_buffer[53 + i - 50] = ble_buff_PPG[1][i];
+				}
+				break;
+			case 0x03:
+				ppg_buffer[0] = BLE_PACK_ID;
+				ppg_buffer[1] = BLE_PPG_PACK;
+				ppg_buffer[2] = ppg_pack_number;
+				for(int i=100;i<150;i++){
+					ppg_buffer[3 + i - 100] = ble_buff_PPG[0][i];
+					ppg_buffer[53 + i - 100] = ble_buff_PPG[1][i];
+				}
+				break;
+			case 0x04:
+				ppg_buffer[0] = BLE_PACK_ID;
+				ppg_buffer[1] = BLE_PPG_PACK;
+				ppg_buffer[2] = ppg_pack_number;
+				for(int i=150;i<200;i++){
+					ppg_buffer[3 + i - 150] = ble_buff_PPG[0][i];
+					ppg_buffer[53 + i - 150] = ble_buff_PPG[1][i];
+				}
+				break;
+			default:
+				ppg_pack_number = 0x00;
+				break;
+		}
+		ppg_pack_number = 0x00;
+		for(int i=0;i<103;i++)
+			buff[i] = ppg_buffer[i];
+	}
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
@@ -425,10 +578,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		  if(prescaler_acc == 5){
 			  prescaler_acc = 0;
 			  UTIL_SEQ_SetTask(1 << READ_ACC_TASK, CFG_SCH_PRIO_0);
-		  }
-		  if(prescaler_send_pack == 50){
-			  UTIL_SEQ_SetTask(1 << CFG_MY_TASK_NOTIFY_DATA, CFG_SCH_PRIO_0);
-			  prescaler_send_pack = 0;
 		  }
 	  }
 

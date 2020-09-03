@@ -188,20 +188,21 @@ enum Mscale {
   MFS_16BITS      // 0.15 mG per LSB
 };
 
-void writeByte(uint8_t reg, uint8_t data);
-void readByte(uint8_t reg, uint8_t *dataR, uint8_t size);
+
+void writeByte(accConfig acc, uint8_t reg, uint8_t data);
+void readByte(accConfig acc, uint8_t reg, uint8_t *dataR, uint8_t size);
 void getMres();
 void getGres();
 void getAres();
-void readAccelData(int16_t * destination);
-void readGyroData(int16_t * destination);
-void readMagData(int16_t * destination);
-int16_t readTempData();
-void resetMPU9250();
-void initAK8963(float * destination);
-void initMPU9250();
-void calibrateMPU9250(float * dest1, float * dest2);
-void MPU9250SelfTest(float * destination);
+accDataRaw readAccelData(accConfig acc);
+void readGyroData(accConfig acc, int16_t * destination);
+void readMagData(accConfig acc, int16_t * destination);
+int16_t readTempData(accConfig acc);
+void resetMPU9250(accConfig acc);
+void initAK8963(accConfig acc, float * destination);
+void initMPU9250(accConfig acc);
+void calibrateMPU9250(accConfig acc, float * dest1, float * dest2);
+void MPU9250SelfTest(accConfig acc, float * destination);
 void MadgwickQuaternionUpdate(float ax, float ay, float az, float gx, float gy, float gz, float mx, float my, float mz);
 void MahonyQuaternionUpdate(float ax, float ay, float az, float gx, float gy, float gz, float mx, float my, float mz);
 

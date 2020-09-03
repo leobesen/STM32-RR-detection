@@ -40,6 +40,20 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 
+typedef struct{
+	SPI_HandleTypeDef* accSPI;
+	GPIO_TypeDef* GPIOx_CS;
+	uint16_t GPIO_Pin_CS;
+} accConfig;
+
+typedef struct
+{
+	uint16_t x;
+	uint16_t y;
+	uint16_t z;
+
+}accDataRaw;
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -49,7 +63,9 @@ extern "C" {
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-extern void get_buffer_values(uint8_t* buff);
+extern void prepare_acc_ble_pack(uint8_t* buff);
+extern void prepare_fsr_ble_pack(uint8_t* buff);
+extern void prepare_ppg_ble_pack(uint8_t* buff);
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
@@ -60,20 +76,20 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define LIS3DH_CS_Pin GPIO_PIN_2
-#define LIS3DH_CS_GPIO_Port GPIOA
-#define SPI1_CS_1_Pin GPIO_PIN_4
-#define SPI1_CS_1_GPIO_Port GPIOA
-#define SPI1_CS_2_Pin GPIO_PIN_9
-#define SPI1_CS_2_GPIO_Port GPIOA
+#define SPI2_CS_2_Pin GPIO_PIN_0
+#define SPI2_CS_2_GPIO_Port GPIOA
+#define SPI2_CS_1_Pin GPIO_PIN_1
+#define SPI2_CS_1_GPIO_Port GPIOA
 #define B1_Pin GPIO_PIN_4
 #define B1_GPIO_Port GPIOC
+#define SPI1_CS_1_Pin GPIO_PIN_2
+#define SPI1_CS_1_GPIO_Port GPIOB
 #define LED_GREEN_Pin GPIO_PIN_0
 #define LED_GREEN_GPIO_Port GPIOB
 #define LED_RED_Pin GPIO_PIN_1
 #define LED_RED_GPIO_Port GPIOB
-#define SPI2_CS_1_Pin GPIO_PIN_12
-#define SPI2_CS_1_GPIO_Port GPIOB
+#define SPI1_CS_2_Pin GPIO_PIN_4
+#define SPI1_CS_2_GPIO_Port GPIOE
 #define JTMS_Pin GPIO_PIN_13
 #define JTMS_GPIO_Port GPIOA
 #define JTCK_Pin GPIO_PIN_14
@@ -84,8 +100,6 @@ void Error_Handler(void);
 #define B3_GPIO_Port GPIOD
 #define JTDO_Pin GPIO_PIN_3
 #define JTDO_GPIO_Port GPIOB
-#define SPI2_CS_2_Pin GPIO_PIN_4
-#define SPI2_CS_2_GPIO_Port GPIOB
 #define LED_BLUE_Pin GPIO_PIN_5
 #define LED_BLUE_GPIO_Port GPIOB
 #define STLINK_RX_Pin GPIO_PIN_6
@@ -93,7 +107,7 @@ void Error_Handler(void);
 #define STLINK_TX_Pin GPIO_PIN_7
 #define STLINK_TX_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
-#define PAYLOAD_LENGTH 205
+#define PAYLOAD_LENGTH 123
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

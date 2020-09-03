@@ -1,6 +1,8 @@
-p2p_server_app.c:93:6:P2PS_STM_App_Notification	16	static
-p2p_server_app.c:140:6:P2PS_APP_Notification	16	static
-p2p_server_app.c:174:6:P2PS_APP_Init	8	static
-p2p_server_app.c:197:13:P2PS_Send_Notification_Task	216	static
-p2p_server_app.c:224:13:P2PS_APP_context_Init	4	static
-p2p_server_app.c:234:13:P2PS_DataChange_Timer_Callback	8	static
+p2p_server_app.c:95:6:P2PS_STM_App_Notification	16	static
+p2p_server_app.c:142:6:P2PS_APP_Notification	16	static
+p2p_server_app.c:176:6:P2PS_APP_Init	8	static
+p2p_server_app.c:202:13:P2PS_Send_Notification_Task_FSR	136	static
+p2p_server_app.c:220:13:P2PS_Send_Notification_Task_ACC	136	static
+p2p_server_app.c:238:13:P2PS_Send_Notification_Task_PPG	136	static
+p2p_server_app.c:265:13:P2PS_APP_context_Init	4	static
+p2p_server_app.c:275:13:P2PS_DataChange_Timer_Callback	8	static
