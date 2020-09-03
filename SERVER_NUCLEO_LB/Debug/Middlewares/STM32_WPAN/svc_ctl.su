@@ -17,5 +17,5 @@ svc_ctl.c:123:13:SVCCTL_InitCustomSvc	4	static
 svc_ctl.c:130:6:SVCCTL_Init	8	static
 svc_ctl.c:147:13:SVCCTL_SvcInit	8	static
 svc_ctl.c:189:6:SVCCTL_RegisterSvcHandler	16	static
-svc_ctl.c:204:6:SVCCTL_RegisterCltHandler	16	static
-svc_ctl.c:214:28:SVCCTL_UserEvtRx	32	static
+svc_ctl.c:206:6:SVCCTL_RegisterCltHandler	16	static
+svc_ctl.c:218:28:SVCCTL_UserEvtRx	32	static

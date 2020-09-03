@@ -12,6 +12,8 @@ SIZE_OUTPUT :=
 OBJDUMP_LIST := 
 EXECUTABLES := 
 OBJS := 
+S_DEPS := 
+S_UPPER_DEPS := 
 C_DEPS := 
 OBJCOPY_BIN := 
 
@@ -23,4 +25,5 @@ Drivers/STM32WBxx_HAL_Driver \
 Middlewares/STM32_WPAN \
 STM32_WPAN/App \
 STM32_WPAN/Target \
+Utilities \
 

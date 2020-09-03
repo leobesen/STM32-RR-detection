@@ -1,0 +1,2 @@
+ADS1115.c:13:6:ADS1115_config	16	static,ignoring_inline_asm
+ADS1115.c:41:6:ADS1115_read	24	static

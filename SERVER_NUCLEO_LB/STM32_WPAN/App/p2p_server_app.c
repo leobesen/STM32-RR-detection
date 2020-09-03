@@ -119,7 +119,7 @@ void P2PS_STM_App_Notification(P2PS_STM_App_Notification_evt_t *pNotification)
     	//HW_TS_Stop(P2P_Server_App_Context.Update_timer_Id);
 /* USER CODE END P2PS_STM_NOTIFY_DISABLED_EVT */
       break;
-      
+
     case P2PS_STM_WRITE_EVT:
 /* USER CODE BEGIN P2PS_STM_WRITE_EVT */
 
@@ -160,7 +160,7 @@ void P2PS_APP_Notification(P2PS_APP_ConnHandle_Not_evt_t *pNotification)
 
 /* USER CODE END PEER_DISCON_HANDLE_EVT */
     break;
-    
+
     default:
 /* USER CODE BEGIN P2PS_APP_Notification_default */
 
