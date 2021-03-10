@@ -106,4 +106,5 @@ class Counters:
     def __init__(self):
         self.cnt = 0
         self.cnt_peak = 0
+        self.acc_samples = 0
 

@@ -6,9 +6,12 @@ class DataPlt:
         plt.figure(figsize=(20,5))
         self.plotCounter = 0
         self.plotCounterMax = 1
-        self.numPoints_FSR = 50    # 15 s - 10 x 15
-        self.numPoints_ACC = 100   # 15 s - 20 x 15
-        self.numPoints_PPG = 500   # 15 s - 100 x 15
+        self.numPoints_FSR_plot = 100    # 5 min = 300 s - 10 x 300 = 3000
+        self.numPoints_ACC_plot = 200    # 20 x 300 = 6000
+        self.numPoints_PPG_plot = 1000   # 100 x 300 = 30000
+        self.numPoints_FSR_save = 3000    # 5 min = 300 s - 10 x 300 = 3000
+        self.numPoints_ACC_save = 6000    # 20 x 300 = 6000
+        self.numPoints_PPG_save = 30000   # 100 x 300 = 30000
         self.numPlots = 1
         self.var = {}
         self.var_label = {}

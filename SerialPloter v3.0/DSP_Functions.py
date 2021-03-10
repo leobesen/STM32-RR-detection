@@ -50,9 +50,19 @@ class Functions:
         #print(amp_freq.shape)
         amp_pos = amp_freq[0][1:len(amp_freq[0]/2)].argmax()
         peak_freq = amp_freq[1][amp_pos]
-        
-        #plt.plot(sample_freq[1:int(len(sample_freq)/2)], amplitude[1:int(len(sample_freq)/2)],'b-') # without DC
+        peak_energy = amp_freq[0][amp_pos]
+        plt.figure()
+        plt.plot(sample_freq[1:int(len(sample_freq)/2)], amplitude[1:int(len(sample_freq)/2)],'b-') # without DC
         #plt.show()
 
-        return peak_freq
+        return [peak_freq, peak_energy]
+
+    def chooseBestAccAxis(self, signal,sr,l):
+        
+        # FFT on each axis of all acc's
+        [peak_freq, peak_energy] = self.fft(signal,sr,l)
+        # Select signal with major frequency bean between 0.2 and 0.6 Hz
+
+        # Select signal with greater energy on that frequency
+        return AccAxis
     
