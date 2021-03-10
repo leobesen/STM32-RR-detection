@@ -68,7 +68,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Core/Inc/rtc.h ../Core/Inc/spi.h ../Core/Inc/app_entry.h \
  ../Core/Inc/app_common.h ../Core/Inc/tim.h ../Core/Inc/usart.h \
  ../Core/Inc/usb.h ../Core/Inc/gpio.h ../Core/Inc/LIS3DH.h \
- ../Core/Inc/spi.h ../Core/Inc/MPU9250.h ../Core/Inc/MAX30100.h \
+ ../Core/Inc/spi.h ../Core/Inc/MPU9250.h ../Core/Inc/MAX30102.h \
  ../Core/Inc/i2c.h ../Core/Inc/app_conf.h ../STM32_WPAN/App/app_ble.h \
  /home/leobesen/STM32Cube/Repository/STM32Cube_FW_WB_V1.8.0/Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/hci_tl.h \
  /home/leobesen/STM32Cube/Repository/STM32Cube_FW_WB_V1.8.0/Middlewares/ST/STM32_WPAN/stm32_wpan_common.h \
@@ -239,7 +239,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Core/Inc/MPU9250.h:
 
-../Core/Inc/MAX30100.h:
+../Core/Inc/MAX30102.h:
 
 ../Core/Inc/i2c.h:
 

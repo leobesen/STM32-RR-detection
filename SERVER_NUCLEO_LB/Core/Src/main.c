@@ -32,7 +32,7 @@
 //#include "LIS3DH.h"
 #include "LIS3DH.h"
 #include "MPU9250.h"
-#include "MAX30100.h"
+#include "MAX30102.h"
 #include "app_conf.h"
 #include "app_ble.h"
 //#include "ADS1115.h"
@@ -88,33 +88,34 @@ LIS3DH_InitTypeDef myAccConfigDef = {
 
 accConfig acc1_1= {
 		&hspi1,
-		SPI1_CS_1_GPIO_Port,
-		SPI1_CS_1_Pin
-};
-accConfig acc1_2 = {
-		&hspi1,
 		SPI1_CS_2_GPIO_Port,
 		SPI1_CS_2_Pin
 };
+accConfig acc1_2 = {
+		&hspi1,
+		SPI1_CS_1_GPIO_Port,
+		SPI1_CS_1_Pin
+};
 accConfig acc2_1 = {
-		&hspi2,
+		&hspi1,
 		SPI2_CS_1_GPIO_Port,
 		SPI2_CS_1_Pin
 };
 accConfig acc2_2 = {
-		&hspi2,
+		&hspi1,
 		SPI2_CS_2_GPIO_Port,
 		SPI2_CS_2_Pin
 };
 
 accDataRaw acc_data_raw[4];
 
-uint8_t WAI_LIS3DH_1 = 0;
-uint8_t WAI_LIS3DH_2 = 0;
-uint8_t WAI_MPU9250 = 0;
+uint8_t WAI_MPU9250_1 = 0;
+uint8_t WAI_MPU9250_2 = 0;
+uint8_t WAI_MPU9250_3 = 0;
+uint8_t WAI_MPU9250_4 = 0;
 
-uint8_t reg = MAX30100_PART_ID;
-uint8_t ID_MAX30100 = 0;
+uint8_t reg = MAX30102_PART_ID;
+uint8_t ID_MAX30102 = 0;
 uint8_t status = 0;
 
 int16_t rawData_MPU9250[3] = {0};
@@ -192,27 +193,31 @@ int main(void)
   //
   //ACC Config
 
-  /*
-   * LIS3DH
-   * */
-  LIS3DH_ReadIO(acc1_1, WHO_AM_I, &WAI_LIS3DH_1, 1);
-  LIS3DH_Init(acc1_1, &myAccConfigDef);
-
-  LIS3DH_ReadIO(acc1_2, WHO_AM_I, &WAI_LIS3DH_2, 1);
-  LIS3DH_Init(acc1_2, &myAccConfigDef);
 
   /*
    * MPU9250
    * */
-   readByte(acc2_1, WHO_AM_I_MPU9250, &WAI_MPU9250, 1);
-
+   readByte(acc1_1, WHO_AM_I_MPU9250, &WAI_MPU9250_1, 1);
+   readByte(acc1_2, WHO_AM_I_MPU9250, &WAI_MPU9250_2, 1);
+   readByte(acc2_1, WHO_AM_I_MPU9250, &WAI_MPU9250_3, 1);
+   readByte(acc2_2, WHO_AM_I_MPU9250, &WAI_MPU9250_4, 1);
+   if((WAI_MPU9250_1 == 0x71)&&(WAI_MPU9250_2 == 0x71)&&(WAI_MPU9250_3 == 0x71)&&(WAI_MPU9250_4 == 0x71))
+   	   HAL_GPIO_TogglePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
+      else
+   	   HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
+   initMPU9250(acc1_1);
+   initMPU9250(acc1_2);
    initMPU9250(acc2_1);
+   initMPU9250(acc2_2);
 
   /*
    * MAX30100
    * */
-   read_byte(reg, &ID_MAX30100);
-
+   read_byte(reg, &ID_MAX30102); // Part ID, normally 0x15
+//   if(ID_MAX30102 == 0x15)
+//	   HAL_GPIO_TogglePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
+//   else
+//	   HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
    begin();
 
 
@@ -233,8 +238,10 @@ int main(void)
   /* USER CODE END 2 */
 
   /* Init code for STM32_WPAN */
-  APPE_Init();
-  /* Infinite loop */
+
+   APPE_Init();
+
+   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
@@ -338,7 +345,7 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 void read_fsr(void){
 
-
+//
 	HAL_ADC_Start(&hadc1);
 	HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
 	raw_fsr = HAL_ADC_GetValue(&hadc1);
@@ -359,9 +366,10 @@ void read_fsr(void){
 
 void read_acc(void){
 
-	acc_data_raw[0] = LIS3DH_GetDataRaw(acc1_1, HIGH_RESOLUTION);
-	acc_data_raw[1] = LIS3DH_GetDataRaw(acc1_2, HIGH_RESOLUTION);
+	acc_data_raw[0] = readAccelData(acc1_1);
+	acc_data_raw[1] = readAccelData(acc1_2);
 	acc_data_raw[2] = readAccelData(acc2_1);
+	acc_data_raw[3] = readAccelData(acc2_2);
 
 	for(int i=0;i<4;i++){
 		//X
@@ -586,7 +594,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			  UTIL_SEQ_SetTask(1 << READ_ACC_TASK, CFG_SCH_PRIO_0);
 		  }
 	  }
-
   }
 
   /* NOTE : This function should not be modified, when the callback is needed,

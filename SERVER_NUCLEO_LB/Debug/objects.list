@@ -1,7 +1,7 @@
 "Core/Src/ADS1115.o"
 "Core/Src/LIS3DH.o"
 "Core/Src/LIS3DH_I2C.o"
-"Core/Src/MAX30100.o"
+"Core/Src/MAX30102.o"
 "Core/Src/MPU9250.o"
 "Core/Src/adc.o"
 "Core/Src/app_debug.o"

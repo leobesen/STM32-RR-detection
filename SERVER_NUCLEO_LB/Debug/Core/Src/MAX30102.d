@@ -1,4 +1,4 @@
-Core/Src/MAX30100.o: ../Core/Src/MAX30100.c ../Core/Inc/MAX30100.h \
+Core/Src/MAX30102.o: ../Core/Src/MAX30102.c ../Core/Inc/MAX30102.h \
  ../Core/Inc/main.h \
  /home/leobesen/STM32Cube/Repository/STM32Cube_FW_WB_V1.8.0/Drivers/STM32WBxx_HAL_Driver/Inc/stm32wbxx_hal.h \
  ../Core/Inc/stm32wbxx_hal_conf.h \
@@ -67,7 +67,7 @@ Core/Src/MAX30100.o: ../Core/Src/MAX30100.c ../Core/Inc/MAX30100.h \
  /home/leobesen/STM32Cube/Repository/STM32Cube_FW_WB_V1.8.0/Utilities/lpm/tiny_lpm/stm32_lpm.h \
  ../Core/Inc/i2c.h
 
-../Core/Inc/MAX30100.h:
+../Core/Inc/MAX30102.h:
 
 ../Core/Inc/main.h:
 

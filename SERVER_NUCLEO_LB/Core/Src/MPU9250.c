@@ -137,9 +137,12 @@ accDataRaw readAccelData(accConfig acc)
   accDataRaw data;
 
   readByte(acc, ACCEL_XOUT_H, &rawData[0], 6);  // Read the six raw data registers into data array
-  data.x = (uint16_t)(((uint16_t)rawData[0] << 8) | rawData[1]) ;  // Turn the MSB and LSB into a signed 16-bit value
-  data.y = (uint16_t)(((uint16_t)rawData[2] << 8) | rawData[3]) ;
-  data.z = (uint16_t)(((uint16_t)rawData[4] << 8) | rawData[5]) ;
+  data.x = (uint16_t)((uint16_t)(rawData[0] << 8) | rawData[1]) ;  // Turn the MSB and LSB into a signed 16-bit value
+  if(data.x > 32768) data.x = 65536 - data.x;
+  data.y = (uint16_t)((uint16_t)(rawData[2] << 8) | rawData[3]) ;
+  if(data.y > 32768) data.y = 65536 - data.y;
+  data.z = (uint16_t)((uint16_t)(rawData[4] << 8) | rawData[5]) ;
+  if(data.z > 32768) data.z = 65536 - data.z;
 
   return data;
 }

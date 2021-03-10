@@ -1,0 +1,7 @@
+MAX30102.c:14:6:begin	16	static
+MAX30102.c:69:6:readFIFO	48	static
+MAX30102.c:112:9:read_diodes	40	static
+MAX30102.c:142:9:get_status	16	static
+MAX30102.c:151:6:readTemperature	32	static
+MAX30102.c:173:6:write_byte	32	static
+MAX30102.c:181:6:read_byte	24	static

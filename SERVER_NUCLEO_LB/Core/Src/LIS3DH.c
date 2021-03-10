@@ -190,37 +190,37 @@ accDataRaw LIS3DH_GetDataRaw(accConfig acc, LIS3DH_Operation_Mode mode)
 	LIS3DH_ReadIO(acc, OUT_X_L, spiBuf, 2);
 	/* x = (MSB<<8) + LSB */
 	tempDataRaw.x = ((spiBuf[1] << 8) + spiBuf[0]);
-	/* Shift from left-justified to right-justified */
-	tempDataRaw.x >>= (UINT16_LEN-numBits);
-	/* Need to handle negative number */
-	if((tempDataRaw.x  & ( 0x0001<<(numBits-1) )) ==  0x0001<<(numBits-1)  )
-	{
-			tempDataRaw.x  = ~tempDataRaw.x ;            //invert bits
-			tempDataRaw.x  &= ( 0xFFFF>>(16-numBits) );  //but keep just the numBits
-			tempDataRaw.x  = ~tempDataRaw.x ;            //invert bits
-    }
+//	/* Shift from left-justified to right-justified */
+//	tempDataRaw.x >>= (UINT16_LEN-numBits);
+//	/* Need to handle negative number */
+//	if((tempDataRaw.x  & ( 0x0001<<(numBits-1) )) ==  0x0001<<(numBits-1)  )
+//	{
+//			tempDataRaw.x  = ~tempDataRaw.x ;            //invert bits
+//			tempDataRaw.x  &= ( 0xFFFF>>(16-numBits) );  //but keep just the numBits
+//			tempDataRaw.x  = ~tempDataRaw.x ;            //invert bits
+//    }
 
 	//Read Y data
 	LIS3DH_ReadIO(acc, OUT_Y_L, spiBuf, 2);
 	tempDataRaw.y = ((spiBuf[1] << 8) + spiBuf[0]);
-	tempDataRaw.y >>= (UINT16_LEN-numBits); //Shift from left-justified to right-justified
-	if((tempDataRaw.y  & ( 0x0001<<(numBits-1) )) ==  0x0001<<(numBits-1)  ) //Need to handle negative number
-	{
-		tempDataRaw.y  = ~tempDataRaw.x ;            //invert bits
-		tempDataRaw.y  &= ( 0xFFFF>>(16-numBits) );  //but keep just the 10-bits
-		tempDataRaw.y  = ~tempDataRaw.x ;            //invert bits
-	}
+//	tempDataRaw.y >>= (UINT16_LEN-numBits); //Shift from left-justified to right-justified
+//	if((tempDataRaw.y  & ( 0x0001<<(numBits-1) )) ==  0x0001<<(numBits-1)  ) //Need to handle negative number
+//	{
+//		tempDataRaw.y  = ~tempDataRaw.x ;            //invert bits
+//		tempDataRaw.y  &= ( 0xFFFF>>(16-numBits) );  //but keep just the 10-bits
+//		tempDataRaw.y  = ~tempDataRaw.x ;            //invert bits
+//	}
 	
 	//Read Z data
 	LIS3DH_ReadIO(acc, OUT_Z_L, spiBuf, 2);
 	tempDataRaw.z = ((spiBuf[1] << 8) + spiBuf[0]);
-	tempDataRaw.z >>= (UINT16_LEN-numBits); //Shift from left-justified to right-justified
-	if((tempDataRaw.z  & ( 0x0001<<(numBits-1) )) ==  0x0001<<(numBits-1)  ) //Need to handle negative number
-	{
-		tempDataRaw.z  = ~tempDataRaw.x ;            //invert bits
-		tempDataRaw.z  &= ( 0xFFFF>>(16-numBits) );  //but keep just the 10-bits
-		tempDataRaw.z  = ~tempDataRaw.x ;            //invert bits
-	}
+//	tempDataRaw.z >>= (UINT16_LEN-numBits); //Shift from left-justified to right-justified
+//	if((tempDataRaw.z  & ( 0x0001<<(numBits-1) )) ==  0x0001<<(numBits-1)  ) //Need to handle negative number
+//	{
+//		tempDataRaw.z  = ~tempDataRaw.x ;            //invert bits
+//		tempDataRaw.z  &= ( 0xFFFF>>(16-numBits) );  //but keep just the 10-bits
+//		tempDataRaw.z  = ~tempDataRaw.x ;            //invert bits
+//	}
 	
 	return tempDataRaw;
 	
