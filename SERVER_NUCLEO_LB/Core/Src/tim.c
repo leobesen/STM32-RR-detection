@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under Ultimate Liberty license
@@ -33,7 +33,7 @@ void MX_TIM16_Init(void)
   htim16.Instance = TIM16;
   htim16.Init.Prescaler = 1000;
   htim16.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim16.Init.Period = 320;
+  htim16.Init.Period = 160; // 160 = 200 Hz ; 320 = 100 Hz
   htim16.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim16.Init.RepetitionCounter = 0;
   htim16.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;

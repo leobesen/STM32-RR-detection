@@ -67,8 +67,9 @@
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void read_acc(void);
-void read_fsr(void);
-void read_ppg(void);
+void read_fsr_mask(void);
+void read_ppg_ecg(void);
+void read_ecg(void);
 
 void prepare_acc_ble_pack(uint8_t* buff);
 void prepare_fsr_ble_pack(uint8_t* buff);
@@ -125,8 +126,8 @@ uint16_t IR = 0, RED = 0;
 // buffers for 1 second of storage
 uint8_t ble_buff_PPG[2][200] = {0};
 uint8_t ble_buff_ACC[4][120] = {0};
-uint8_t ble_buff_FSR[20] = {0};
-
+uint8_t ble_buff_FSR[2][20] = {0};
+uint8_t ble_buff_ECG[400] = {0};
 char flag_reading_completed = 0x01;
 
 uint8_t prescaler_acc = 0;
@@ -136,6 +137,7 @@ uint8_t prescaler_send_pack = 0;
 uint8_t counter_acc = 0;
 uint8_t counter_ppg = 0;
 uint8_t counter_fsr = 0;
+uint8_t counter_ecg = 0;
 
 char acc_pack_number = 0x00;
 char ppg_pack_number = 0x00;
@@ -145,6 +147,10 @@ char flag_fsr_buff_full = 0x00;
 char buffer_select = 0x00;
 
 uint16_t raw_fsr;
+uint16_t raw_ecg;
+uint16_t raw_mask;
+
+ADC_ChannelConfTypeDef sConfig = {0};
 
 
 
@@ -182,11 +188,11 @@ int main(void)
   MX_USB_PCD_Init();
   MX_RF_Init();
   MX_RTC_Init();
-  MX_I2C3_Init();
+//  MX_I2C3_Init();
   MX_SPI1_Init();
   MX_SPI2_Init();
   MX_TIM16_Init();
-  MX_I2C1_Init();
+//  MX_I2C1_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
@@ -213,12 +219,12 @@ int main(void)
   /*
    * MAX30100
    * */
-   read_byte(reg, &ID_MAX30102); // Part ID, normally 0x15
+//   read_byte(reg, &ID_MAX30102); // Part ID, normally 0x15
 //   if(ID_MAX30102 == 0x15)
 //	   HAL_GPIO_TogglePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
 //   else
 //	   HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
-   begin();
+//   begin();
 
 
    /*
@@ -228,20 +234,24 @@ int main(void)
   // Calibrate The ADC On Power-Up For Better Accuracy
   HAL_ADCEx_Calibration_Start(&hadc1,ADC_SINGLE_ENDED);
 
+  sConfig.Rank = ADC_REGULAR_RANK_1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+  sConfig.SingleDiff = ADC_SINGLE_ENDED;
+  sConfig.OffsetNumber = ADC_OFFSET_NONE;
+  sConfig.Offset = 0;
+
    /*
     * Register functions
     * */
    UTIL_SEQ_RegTask( 1<< READ_ACC_TASK, UTIL_SEQ_RFU, read_acc );
-   UTIL_SEQ_RegTask( 1<< READ_FSR_TASK, UTIL_SEQ_RFU, read_fsr );
-   UTIL_SEQ_RegTask( 1<< READ_PPG_TASK, UTIL_SEQ_RFU, read_ppg );
+   UTIL_SEQ_RegTask( 1<< READ_FSR_TASK, UTIL_SEQ_RFU, read_fsr_mask );
+   UTIL_SEQ_RegTask( 1<< READ_PPG_TASK, UTIL_SEQ_RFU, read_ecg );
 
   /* USER CODE END 2 */
 
   /* Init code for STM32_WPAN */
-
-   APPE_Init();
-
-   /* Infinite loop */
+  APPE_Init();
+  /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
@@ -343,15 +353,44 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-void read_fsr(void){
 
-//
-	HAL_ADC_Start(&hadc1);
-	HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
-	raw_fsr = HAL_ADC_GetValue(&hadc1);
+		/*
+		ACC:
+		20 Hz * 4 acc * 3 axis * 2 bytes = 480 bytes/s
+		FSR:
+		10 Hz * 1 fsr * 2 bytes = 20 bytes/s
+		PPG:
+		100 Hz * 1 ppg * 2 red/ir * 2 bytes = 400 bytes/s
+		ECG:
+		100 Hz * 1 ecg * 2 bytes = 200 bytes/s
 
-	ble_buff_FSR[0+counter_fsr] = (raw_fsr & 0x00FF);
-	ble_buff_FSR[1+counter_fsr] = ((raw_fsr >> 8) & 0x00FF);
+		Total = 1.1 kbps
+		*/
+
+void read_fsr_mask(void){
+
+	sConfig.Channel = ADC_CHANNEL_7;
+	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) == HAL_OK)
+	{
+		HAL_ADC_Start(&hadc1);
+		if(HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY) == HAL_OK)
+			raw_fsr = HAL_ADC_GetValue(&hadc1);
+		HAL_ADC_Stop(&hadc1);
+	}
+	sConfig.Channel = ADC_CHANNEL_15;
+	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) == HAL_OK)
+	{
+		HAL_ADC_Start(&hadc1);
+		if(HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY) == HAL_OK)
+			raw_mask = HAL_ADC_GetValue(&hadc1);
+		HAL_ADC_Stop(&hadc1);
+	}
+
+	ble_buff_FSR[0][0+counter_fsr] = (raw_fsr & 0x00FF);
+	ble_buff_FSR[0][1+counter_fsr] = ((raw_fsr >> 8) & 0x00FF);
+
+	ble_buff_FSR[1][0+counter_fsr] = (raw_mask & 0x00FF);
+	ble_buff_FSR[1][1+counter_fsr] = ((raw_mask >> 8) & 0x00FF);
 
 	if(counter_fsr == 18){
 		counter_fsr=0;
@@ -411,17 +450,71 @@ void read_acc(void){
 }
 
 
-void read_ppg(void){
+void read_ecg(void){
+
+	sConfig.Channel = ADC_CHANNEL_8;
+	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) == HAL_OK)
+	{
+		if(HAL_ADC_Start(&hadc1)==HAL_OK){
+			if(HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY) == HAL_OK){
+				raw_ecg = HAL_ADC_GetValue(&hadc1);
+//				HAL_GPIO_TogglePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
+			}
+			HAL_ADC_Stop(&hadc1);
+		}
+	}
+
+	ble_buff_ECG[0+counter_ecg] = (raw_ecg & 0x00FF);
+	ble_buff_ECG[1+counter_ecg] = ((raw_ecg >> 8) & 0x00FF);
+
+	counter_ecg+=2;
+
+	if(counter_ecg == 100){
+		// send first pack
+		ppg_pack_number = 0x01;
+		UTIL_SEQ_SetTask(1 << SEND_PPG_DATA_BLE_TASK, CFG_SCH_PRIO_1);
+	}
+	if(counter_ecg == 200){
+		// send second pack
+		ppg_pack_number = 0x02;
+		UTIL_SEQ_SetTask(1 << SEND_PPG_DATA_BLE_TASK, CFG_SCH_PRIO_1);
+	}
+	if(counter_ecg == 300){
+		// send third pack
+		ppg_pack_number = 0x03;
+		UTIL_SEQ_SetTask(1 << SEND_PPG_DATA_BLE_TASK, CFG_SCH_PRIO_1);
+	}
+	if(counter_ecg == 400){
+		// send fourth pack
+		ppg_pack_number = 0x04;
+		UTIL_SEQ_SetTask(1 << SEND_PPG_DATA_BLE_TASK, CFG_SCH_PRIO_1);
+	}
+
+	if(counter_ecg == 400)
+		counter_ecg = 0;
+
+}
+
+void read_ppg_ecg(void){
 	/*
 	 * MAX30100
 	 * */
 	readFIFO(&RED, &IR);
 
+	sConfig.Channel = ADC_CHANNEL_8;
+	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) == HAL_OK)
+	{
+		HAL_ADC_Start(&hadc1);
+		if(HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY) == HAL_OK)
+			raw_ecg = HAL_ADC_GetValue(&hadc1);
+		HAL_ADC_Stop(&hadc1);
+	}
+
 	ble_buff_PPG[0][0+counter_ppg] = (RED & 0x00FF);
 	ble_buff_PPG[0][1+counter_ppg] = ((RED >> 8) & 0x00FF);
 
-	ble_buff_PPG[1][0+counter_ppg] = (IR & 0x00FF);
-	ble_buff_PPG[1][1+counter_ppg] = ((IR >> 8) & 0x00FF);
+	ble_buff_PPG[1][0+counter_ppg] = (raw_ecg & 0x00FF);
+	ble_buff_PPG[1][1+counter_ppg] = ((raw_ecg >> 8) & 0x00FF);
 
 	counter_ppg+=2;
 
@@ -456,12 +549,15 @@ void prepare_fsr_ble_pack(uint8_t* buff){
 	buff[0] = BLE_PACK_ID;
 	buff[1] = BLE_FSR_PACK;
 	buff[2] = 0x01;
-	for(int i=3;i<23;i++)
-		buff[i] = ble_buff_FSR[i-3];
+	for(int i=0;i<20;i++)
+		buff[i+3] = ble_buff_FSR[0][i];
+	for(int i=0;i<20;i++)
+		buff[i+23] = ble_buff_FSR[1][i];
 
 }
 
 void prepare_acc_ble_pack(uint8_t* buff){
+
 
 	uint8_t acc_buffer[123] = {0};
 
@@ -472,7 +568,7 @@ void prepare_acc_ble_pack(uint8_t* buff){
 				acc_buffer[1] = BLE_ACC_PACK;
 				acc_buffer[2] = acc_pack_number;
 				for(int i=0;i<30;i++){
-					acc_buffer[3 + i] = ble_buff_ACC[0][i];
+					acc_buffer[3 + i] = ble_buff_ACC[0][i]; // 30 bytes = 15 samples / 3 = 5 samples of each axis
 					acc_buffer[33 + i] = ble_buff_ACC[1][i];
 					acc_buffer[63 + i] = ble_buff_ACC[2][i];
 					acc_buffer[93 + i] = ble_buff_ACC[3][i];
@@ -520,6 +616,57 @@ void prepare_acc_ble_pack(uint8_t* buff){
 			buff[i] = acc_buffer[i];
 	}
 }
+//void prepare_ppg_ble_pack(uint8_t* buff){
+//
+//	uint8_t ppg_buffer[103] = {0};
+//
+//	if(ppg_pack_number != 0x00){
+//		switch(ppg_pack_number){
+//			case 0x01:
+//				ppg_buffer[0] = BLE_PACK_ID;
+//				ppg_buffer[1] = BLE_PPG_PACK;
+//				ppg_buffer[2] = ppg_pack_number;
+//				for(int i=0;i<50;i++){
+//					ppg_buffer[3 + i] = ble_buff_PPG[0][i];
+//					ppg_buffer[53 + i] = ble_buff_PPG[1][i];
+//				}
+//				break;
+//			case 0x02:
+//				ppg_buffer[0] = BLE_PACK_ID;
+//				ppg_buffer[1] = BLE_PPG_PACK;
+//				ppg_buffer[2] = ppg_pack_number;
+//				for(int i=50;i<100;i++){
+//					ppg_buffer[3 + i - 50] = ble_buff_PPG[0][i];
+//					ppg_buffer[53 + i - 50] = ble_buff_PPG[1][i];
+//				}
+//				break;
+//			case 0x03:
+//				ppg_buffer[0] = BLE_PACK_ID;
+//				ppg_buffer[1] = BLE_PPG_PACK;
+//				ppg_buffer[2] = ppg_pack_number;
+//				for(int i=100;i<150;i++){
+//					ppg_buffer[3 + i - 100] = ble_buff_PPG[0][i];
+//					ppg_buffer[53 + i - 100] = ble_buff_PPG[1][i];
+//				}
+//				break;
+//			case 0x04:
+//				ppg_buffer[0] = BLE_PACK_ID;
+//				ppg_buffer[1] = BLE_PPG_PACK;
+//				ppg_buffer[2] = ppg_pack_number;
+//				for(int i=150;i<200;i++){
+//					ppg_buffer[3 + i - 150] = ble_buff_PPG[0][i];
+//					ppg_buffer[53 + i - 150] = ble_buff_PPG[1][i];
+//				}
+//				break;
+//			default:
+//				ppg_pack_number = 0x00;
+//				break;
+//		}
+//		ppg_pack_number = 0x00;
+//		for(int i=0;i<103;i++)
+//			buff[i] = ppg_buffer[i];
+//	}
+//}
 void prepare_ppg_ble_pack(uint8_t* buff){
 
 	uint8_t ppg_buffer[103] = {0};
@@ -530,36 +677,32 @@ void prepare_ppg_ble_pack(uint8_t* buff){
 				ppg_buffer[0] = BLE_PACK_ID;
 				ppg_buffer[1] = BLE_PPG_PACK;
 				ppg_buffer[2] = ppg_pack_number;
-				for(int i=0;i<50;i++){
-					ppg_buffer[3 + i] = ble_buff_PPG[0][i];
-					ppg_buffer[53 + i] = ble_buff_PPG[1][i];
+				for(int i=0;i<100;i++){
+					ppg_buffer[3 + i] = ble_buff_ECG[i];
 				}
 				break;
 			case 0x02:
 				ppg_buffer[0] = BLE_PACK_ID;
 				ppg_buffer[1] = BLE_PPG_PACK;
 				ppg_buffer[2] = ppg_pack_number;
-				for(int i=50;i<100;i++){
-					ppg_buffer[3 + i - 50] = ble_buff_PPG[0][i];
-					ppg_buffer[53 + i - 50] = ble_buff_PPG[1][i];
+				for(int i=100;i<200;i++){
+					ppg_buffer[3 + i - 100] = ble_buff_ECG[i];
 				}
 				break;
 			case 0x03:
 				ppg_buffer[0] = BLE_PACK_ID;
 				ppg_buffer[1] = BLE_PPG_PACK;
 				ppg_buffer[2] = ppg_pack_number;
-				for(int i=100;i<150;i++){
-					ppg_buffer[3 + i - 100] = ble_buff_PPG[0][i];
-					ppg_buffer[53 + i - 100] = ble_buff_PPG[1][i];
+				for(int i=200;i<300;i++){
+					ppg_buffer[3 + i - 200] = ble_buff_ECG[i];
 				}
 				break;
 			case 0x04:
 				ppg_buffer[0] = BLE_PACK_ID;
 				ppg_buffer[1] = BLE_PPG_PACK;
 				ppg_buffer[2] = ppg_pack_number;
-				for(int i=150;i<200;i++){
-					ppg_buffer[3 + i - 150] = ble_buff_PPG[0][i];
-					ppg_buffer[53 + i - 150] = ble_buff_PPG[1][i];
+				for(int i=300;i<400;i++){
+					ppg_buffer[3 + i - 300] = ble_buff_ECG[i];
 				}
 				break;
 			default:
@@ -581,15 +724,15 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		  prescaler_fsr++;
 		  prescaler_acc++;
 		  prescaler_send_pack++;
-		  // read ppg sensor - 100Hz
+		  // read ppg sensor - 200Hz
 		  UTIL_SEQ_SetTask(1 << READ_PPG_TASK, CFG_SCH_PRIO_0);
 		  // read fsr sensor - 10Hz
-		  if(prescaler_fsr == 10){
+		  if(prescaler_fsr == 20){
 			  prescaler_fsr = 0;
 			  UTIL_SEQ_SetTask(1 << READ_FSR_TASK, CFG_SCH_PRIO_0);
 		  }
 		  // read acc sensor - 20Hz
-		  if(prescaler_acc == 5){
+		  if(prescaler_acc == 10){
 			  prescaler_acc = 0;
 			  UTIL_SEQ_SetTask(1 << READ_ACC_TASK, CFG_SCH_PRIO_0);
 		  }
